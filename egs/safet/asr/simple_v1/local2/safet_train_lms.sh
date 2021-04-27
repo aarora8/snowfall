@@ -31,7 +31,7 @@ if [ -z $kaldi_lm ]; then
 fi
 
 cleantext=$dir/text.no_oov
-exit
+
 cat $text | awk -v lex=$lexicon 'BEGIN{while((getline<lex) >0){ seen[$1]=1; } }
   {for(n=1; n<=NF;n++) {  if (seen[$n]) { printf("%s ", $n); } else {printf("<UNK> ");} } printf("\n");}' \
   >$cleantext || exit 1

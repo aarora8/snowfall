@@ -25,30 +25,20 @@ fi
 if [ $stage -le 2 ]; then
   echo "LM preparation"
   local2/safet_train_lms.sh
-  exit
   gunzip -c data/local/lm/3gram-mincount/lm_unpruned.gz >data/local/lm/lm_tgmed.arpa
 
-  # Build G
-#  python3 -m kaldilm \
-#    --read-symbol-table="data/lang_nosp/words.txt" \
-#    --disambig-symbol='#0' \
-#    --max-order=3 \
-#    data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
-fi
-exit
-if [ $stage -le 3 ]; then
   # Build G
   python3 -m kaldilm \
     --read-symbol-table="data/lang_nosp/words.txt" \
     --disambig-symbol='#0' \
     --max-order=3 \
-    data/local2/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
+    data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
 fi
-exit
+
 if [ $stage -le 4 ]; then
   python3 ./prepare.py
 fi
-exit
+
 if [ $stage -le 5 ]; then
   ngpus=1
   python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train.py --world_size $ngpus
