@@ -92,6 +92,11 @@ def main():
         Path('/root/fangjun/data/librispeech/LibriSpeech'),
         Path('/export/common/data/corpora/ASR/openslr/SLR12/LibriSpeech')
     )
+    musan_dir = locate_corpus(
+        Path('/export/corpora5/JHU/musan'),
+        Path('/export/common/data/corpora/MUSAN/musan'),
+        Path('/root/fangjun/data/musan'),
+    )
 
     output_dir = Path('exp/data')
     print('LibriSpeech manifest preparation:')
