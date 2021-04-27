@@ -38,6 +38,7 @@ from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
 from snowfall.training.mmi_graph import create_bigram_phone_lm
 from snowfall.training.mmi_graph import get_phone_symbols
 
+logging.info = print
 den_scale = 1.0
 
 def encode_supervisions(supervisions: Dict[str, torch.Tensor],
