@@ -7,7 +7,7 @@
 
 set -eou pipefail
 
-stage=0
+stage=5
 
 if [ $stage -le 1 ]; then
   local/download_lm.sh "openslr.org/resources/11" data/local/lm
@@ -60,7 +60,7 @@ fi
 if [ $stage -le 5 ]; then
   python3 ./prepare.py
 fi
-
+exit
 if [ $stage -le 6 ]; then
   # python3 ./train.py # ctc training
   # python3 ./mmi_bigram_train.py # ctc training + bigram phone LM
@@ -68,7 +68,7 @@ if [ $stage -le 6 ]; then
 
   # Single node, multi-GPU training
   # Adapting to a multi-node scenario should be straightforward.
-  ngpus=2
+  ngpus=1
   python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train.py --world_size $ngpus
 fi
 
