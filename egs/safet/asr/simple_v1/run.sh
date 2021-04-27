@@ -6,6 +6,7 @@
 # Example of how to build L and G FST for K2. Most scripts of this example are copied from Kaldi.
 
 set -eou pipefail
+[ -f path.sh ] && . ./path.sh
 
 stage=5
 
