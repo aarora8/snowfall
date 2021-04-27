@@ -124,7 +124,7 @@ def main():
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
         for partition, manifests in safet_manifests.items():
-            if (output_dir / f'cuts_{partition}.json.gz').is_file():
+            if (output_dir / f'cuts_safet1_{partition}.json.gz').is_file():
                 print(f'{partition} already exists - skipping.')
                 continue
             print('Processing', partition)
@@ -132,6 +132,8 @@ def main():
                 recordings=manifests['recordings'],
                 supervisions=manifests['supervisions']
             )
+            #if 'train' in partition:
+            #    cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
                 storage_path=f'{output_dir}/feats_safet_{partition}',

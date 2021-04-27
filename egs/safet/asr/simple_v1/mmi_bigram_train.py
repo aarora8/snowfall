@@ -309,7 +309,7 @@ def main():
         # noises from Musan are mixed onto almost-zero-energy
         # padding frames.
         transforms = [CutConcatenate(duration_factor=1)] + transforms
-    train = K2SpeechRecognitionDataset(cuts_train, cut_transforms=transforms)
+    train = K2SpeechRecognitionDataset(cuts_train)
     if args.bucketing_sampler:
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
