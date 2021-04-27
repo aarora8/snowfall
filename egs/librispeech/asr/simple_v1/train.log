@@ -1,0 +1,16 @@
+# Running on b01
+# Started at Tue Apr 27 13:58:28 EDT 2021
+# /home/aaror/miniconda3/envs/k2/bin/python3 prepare.py 
+WARNING:root:There are 347 recordings that do not have any corresponding supervisions in the SupervisionSet.
+Parts we will prepare:  ('dev-clean', 'dev-other', 'test-clean', 'test-other')
+LibriSpeech manifest preparation:
+safet manifest preparation:
+Feature extraction:
+Processing train
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [05:56<1:23:08, 356.30s/it]Extracting and storing features (chunks progress):  13%|█▎        | 2/15 [06:50<38:41, 178.54s/it]  Extracting and storing features (chunks progress):  20%|██        | 3/15 [07:02<20:31, 102.62s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [07:02<00:00, 28.18s/it]
+dev-clean already exists - skipping.
+dev-other already exists - skipping.
+test-clean already exists - skipping.
+test-other already exists - skipping.
+# Accounting: time=430 threads=1
+# Finished at Tue Apr 27 14:05:38 EDT 2021 with status 0
