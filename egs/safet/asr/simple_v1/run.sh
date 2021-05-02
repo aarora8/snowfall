@@ -37,6 +37,7 @@ fi
 
 if [ $stage -le 4 ]; then
   python3 ./prepare.py
+  #utils/queue.pl --mem 30G train.log /home/aaror/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 5 ]; then
