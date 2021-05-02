@@ -67,15 +67,14 @@ def main():
     output_dir = Path('exp/data')
     print('safet manifest preparation:')
     safet_manifests = prepare_safet(
-        audio_dir='/export/c03/aarora8/snowfall/egs/safet/asr/simple_v1/corpora_data/LDC2020E10',
-        transcripts_dir='/export/corpora5/opensat_corpora/LDC2020E09',
+        corpus_dir='/export/c03/aarora8/snowfall/egs/safet/asr/simple_v1/corpora_data/',
         output_dir=output_dir
     )
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
         for partition, manifests in safet_manifests.items():
-            if (output_dir / f'cuts_safet1_{partition}.json.gz').is_file():
+            if (output_dir / f'cuts_safet_{partition}.json.gz').is_file():
                 print(f'{partition} already exists - skipping.')
                 continue
             print('Processing', partition)
