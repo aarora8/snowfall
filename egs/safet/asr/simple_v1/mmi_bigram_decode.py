@@ -67,7 +67,7 @@ def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
             f"Check failed: HLG.device ({HLG.device}) == nnet_output.device ({nnet_output.device})"
         # TODO(haowen): with a small `beam`, we may get empty `target_graph`,
         # thus `tot_scores` will be `inf`. Definitely we need to handle this later.
-        lattices = k2.intersect_dense_pruned(HLG, dense_fsa_vec, 20.0, 7.0, 30,
+        lattices = k2.intersect_dense_pruned(HLG, dense_fsa_vec, 10.0, 7.0, 30,
                                              10000)
 
         # lattices = k2.intersect_dense(HLG, dense_fsa_vec, 10.0)
@@ -221,11 +221,11 @@ def main():
     # load dataset
     feature_dir = Path('exp/data')
     logging.debug("About to get test cuts")
-    cuts_test = CutSet.from_json(feature_dir / 'cuts_test-clean.json.gz')
+    cuts_test = CutSet.from_json(feature_dir / 'cuts_safet_train.json.gz')
 
     logging.info("About to create test dataset")
     test = K2SpeechRecognitionDataset(cuts_test)
-    sampler = SingleCutSampler(cuts_test, max_frames=40000)
+    sampler = SingleCutSampler(cuts_test, max_frames=5000)
     logging.info("About to create test dataloader")
     test_dl = torch.utils.data.DataLoader(test, batch_size=None, sampler=sampler, num_workers=1)
 

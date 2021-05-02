@@ -11,7 +11,7 @@ from pathlib import Path
 
 import torch
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
-from lhotse.recipes import prepare_librispeech, prepare_safet, prepare_musan
+from lhotse.recipes import prepare_ami
 
 from snowfall.common import str2bool
 
@@ -85,102 +85,35 @@ def main():
         dataset_parts = ('dev-clean', 'dev-other', 'test-clean', 'test-other')
 
     print("Parts we will prepare: ", dataset_parts)
-
-    corpus_dir = locate_corpus(
-        Path('/export/corpora5/LibriSpeech'),
-        Path('/home/storage04/zhuangweiji/data/open-source-data/librispeech/LibriSpeech'),
-        Path('/root/fangjun/data/librispeech/LibriSpeech'),
-        Path('/export/common/data/corpora/ASR/openslr/SLR12/LibriSpeech')
-    )
-    musan_dir = locate_corpus(
-        Path('/export/corpora5/JHU/musan'),
-        Path('/export/common/data/corpora/MUSAN/musan'),
-        Path('/root/fangjun/data/musan'),
-    )
-
     output_dir = Path('exp/data')
-    print('LibriSpeech manifest preparation:')
-    librispeech_manifests = prepare_librispeech(
-        corpus_dir=corpus_dir,
-        dataset_parts=dataset_parts,
-        output_dir=output_dir,
-        num_jobs=args.num_jobs
-    )
-
-    print('Musan manifest preparation:')
-    musan_cuts_path = output_dir / 'cuts_musan.json.gz'
-    musan_manifests = prepare_musan(
-        corpus_dir=musan_dir,
-        output_dir=output_dir,
-        parts=('music', 'speech', 'noise')
-    )
-    print('safet manifest preparation:')
-    safet_manifests = prepare_safet(
-        audio_dir='/export/corpora5/opensat_corpora/LDC2020E10',
-        transcripts_dir='/export/corpora5/opensat_corpora/LDC2020E09',
-        output_dir=output_dir
-    )
+    print('ami manifest preparation:')
+    #download_ami('/export/corpora5/amicorpus/','/export/c03/aarora8/snowfall/egs/ami/asr/simple_v1/exp/data/')
+    ami_manifests = prepare_ami('/export/corpora5/amicorpus/', 'exp', output_dir, 'ihm', 'full-corpus-asr', 0.5)
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
-        for partition, manifests in safet_manifests.items():
-            if (output_dir / f'cuts_safet1_{partition}.json.gz').is_file():
+        for partition, manifests in ami_manifests.items():
+            print(f"Processing {partition} ")
+            if (output_dir / f'cuts_ami_{partition}.json.gz').is_file():
                 print(f'{partition} already exists - skipping.')
                 continue
-            print('Processing', partition)
             cut_set = CutSet.from_manifests(
                 recordings=manifests['recordings'],
                 supervisions=manifests['supervisions']
             )
+            print(f"store cutset supervision")
             cut_set = cut_set.trim_to_supervisions()
-            #cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
+            cut_set.to_json(f'{output_dir}/cuts_ami_tts_{partition}.json')
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
-                storage_path=f'{output_dir}/feats_safet_{partition}',
+                storage_path=f'{output_dir}/feats_ami_{partition}',
                 # when an executor is specified, make more partitions
                 num_jobs=args.num_jobs if ex is None else 80,
                 executor=ex,
                 storage_type=LilcomHdf5Writer
             )
-            safet_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_safet_{partition}.json.gz')
-
-        for partition, manifests in librispeech_manifests.items():
-            if (output_dir / f'cuts_{partition}.json.gz').is_file():
-                print(f'{partition} already exists - skipping.')
-                continue
-            print('Processing', partition)
-            cut_set = CutSet.from_manifests(
-                recordings=manifests['recordings'],
-                supervisions=manifests['supervisions']
-            )
-            if 'train' in partition:
-                cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
-            cut_set = cut_set.compute_and_store_features(
-                extractor=extractor,
-                storage_path=f'{output_dir}/feats_{partition}',
-                # when an executor is specified, make more partitions
-                num_jobs=args.num_jobs if ex is None else 80,
-                executor=ex,
-                storage_type=LilcomHdf5Writer
-            )
-            librispeech_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_{partition}.json.gz')
-
-        # Now onto Musan
-        if not musan_cuts_path.is_file():
-            print('Extracting features for Musan')
-            # create chunks of Musan with duration 5 - 10 seconds
-            musan_cuts = CutSet.from_manifests(
-                recordings=combine(part['recordings'] for part in musan_manifests.values())
-            ).cut_into_windows(10.0).filter(lambda c: c.duration > 5).compute_and_store_features(
-                extractor=extractor,
-                storage_path=f'{output_dir}/feats_musan',
-                num_jobs=args.num_jobs if ex is None else 80,
-                executor=ex,
-                storage_type=LilcomHdf5Writer
-            )
-            musan_cuts.to_json(musan_cuts_path)
+            ami_manifests[partition]['cuts'] = cut_set
+            cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
 
 
 if __name__ == '__main__':

@@ -314,7 +314,7 @@ def main():
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
             cuts_train,
-            max_frames=40000,
+            max_frames=20000,
             shuffle=True,
             num_buckets=30
         )
@@ -322,7 +322,7 @@ def main():
         logging.info('Using regular sampler with cut concatenation.')
         train_sampler = SingleCutSampler(
             cuts_train,
-            max_frames=30000,
+            max_frames=20000,
             shuffle=True,
         )
     logging.info("About to create train dataloader")
@@ -330,7 +330,7 @@ def main():
         train,
         sampler=train_sampler,
         batch_size=None,
-        num_workers=4
+        num_workers=1
     )
     logging.info("About to create dev dataset")
     validate = K2SpeechRecognitionDataset(cuts_dev)
@@ -341,7 +341,7 @@ def main():
     #       torch.distributed.all_reduce() tends to hang indefinitely inside
     #       NCCL after ~3000 steps. With the current approach, we can still report
     #       the loss on the full validation set.
-    valid_sampler = SingleCutSampler(cuts_dev, max_frames=90000, world_size=1, rank=0)
+    valid_sampler = SingleCutSampler(cuts_dev, max_frames=30000, world_size=1, rank=0)
     logging.info("About to create dev dataloader")
     valid_dl = torch.utils.data.DataLoader(
         validate,

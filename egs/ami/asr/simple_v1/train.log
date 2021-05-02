@@ -1,0 +1,34 @@
+# Running on b08
+# Started at Sun May 2 14:45:57 EDT 2021
+# /home/aaror/miniconda3/envs/k2/bin/python3 prepare.py 
+WARNING:root:No speaker EN2009c.D found! Skipping annotation.
+WARNING:root:No speaker EN2002c.D found! Skipping annotation.
+WARNING:root:No speaker EN2003a.D found! Skipping annotation.
+WARNING:root:No speaker IN1001.D found! Skipping annotation.
+WARNING:root:No speaker EN2009b.D found! Skipping annotation.
+WARNING:root:No annotation found for recording EN2002c (file 0)
+WARNING:root:No annotation found for recording EN2003a (file 2)
+WARNING:root:No annotation found for recording EN2009b (file 3)
+WARNING:root:No annotation found for recording EN2009c (file 3)
+WARNING:root:No annotation found for recording IN1001 (file 3)
+WARNING:root:Segment TS3007c-1-138 exceeds recording duration. Not adding to supervisions.
+WARNING:root:Segment TS3007c-2-94 exceeds recording duration. Not adding to supervisions.
+WARNING:root:Segment TS3007c-2-95 exceeds recording duration. Not adding to supervisions.
+WARNING:root:Segment TS3007c-2-96 exceeds recording duration. Not adding to supervisions.
+WARNING:root:There are 5 recordings that do not have any corresponding supervisions in the SupervisionSet.
+WARNING:root:There are 4 recordings that do not have any corresponding supervisions in the SupervisionSet.
+WARNING:root:There are 1 recordings that do not have any corresponding supervisions in the SupervisionSet.
+Parts we will prepare:  ('dev-clean', 'dev-other', 'test-clean', 'test-other')
+ami manifest preparation:
+Feature extraction:
+Processing train 
+store cutset supervision
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [07:33<1:45:54, 453.89s/it]Extracting and storing features (chunks progress):  13%|█▎        | 2/15 [07:35<40:42, 187.85s/it]  Extracting and storing features (chunks progress):  33%|███▎      | 5/15 [07:40<09:04, 54.48s/it] Extracting and storing features (chunks progress):  47%|████▋     | 7/15 [07:44<04:25, 33.22s/it]Extracting and storing features (chunks progress):  53%|█████▎    | 8/15 [07:46<03:03, 26.19s/it]Extracting and storing features (chunks progress):  80%|████████  | 12/15 [07:47<00:34, 11.66s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [07:47<00:00, 31.17s/it]Processing dev 
+store cutset supervision
+
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [00:40<09:27, 40.55s/it]Extracting and storing features (chunks progress):  20%|██        | 3/15 [00:40<02:07, 10.60s/it]Extracting and storing features (chunks progress):  33%|███▎      | 5/15 [00:41<00:52,  5.24s/it]Extracting and storing features (chunks progress):  40%|████      | 6/15 [00:41<00:35,  3.91s/it]Extracting and storing features (chunks progress):  60%|██████    | 9/15 [00:41<00:11,  1.88s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [00:41<00:00,  2.79s/it]Processing test 
+store cutset supervision
+
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [00:28<06:34, 28.20s/it]Extracting and storing features (chunks progress):  13%|█▎        | 2/15 [00:29<02:39, 12.24s/it]Extracting and storing features (chunks progress):  27%|██▋       | 4/15 [00:29<00:51,  4.71s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [00:29<00:00,  1.98s/it]
+# Accounting: time=609 threads=1
+# Finished at Sun May 2 14:56:06 EDT 2021 with status 0
