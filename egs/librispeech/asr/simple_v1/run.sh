@@ -7,7 +7,7 @@
 
 set -eou pipefail
 
-stage=5
+stage=0
 
 if [ $stage -le 1 ]; then
   local/download_lm.sh "openslr.org/resources/11" data/local/lm
@@ -56,7 +56,7 @@ if [ $stage -le 4 ]; then
   echo "    G = k2.Fsa.from_openfst(f.read(), acceptor=False)"
   echo ""
 fi
-
+exit
 if [ $stage -le 5 ]; then
   python3 ./prepare.py
 fi
