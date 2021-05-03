@@ -1,0 +1,12 @@
+# Running on c22
+# Started at Sun May 2 19:47:46 EDT 2021
+# /home/aaror/miniconda3/envs/k2/bin/python3 prepare.py 
+WARNING:root:There are 619 recordings that do not have any corresponding supervisions in the SupervisionSet.
+safet manifest preparation:
+Feature extraction:
+Processing train
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [03:14<45:28, 194.90s/it]Extracting and storing features (chunks progress):  13%|█▎        | 2/15 [03:27<18:57, 87.50s/it] Extracting and storing features (chunks progress):  33%|███▎      | 5/15 [03:31<04:19, 25.96s/it]Extracting and storing features (chunks progress):  47%|████▋     | 7/15 [03:32<02:04, 15.59s/it]Extracting and storing features (chunks progress):  73%|███████▎  | 11/15 [03:32<00:28,  7.24s/it]Extracting and storing features (chunks progress):  87%|████████▋ | 13/15 [03:33<00:10,  5.38s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [03:33<00:00, 14.26s/it]Processing dev
+
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [00:11<02:40, 11.49s/it]Extracting and storing features (chunks progress):  13%|█▎        | 2/15 [00:12<01:08,  5.24s/it]Extracting and storing features (chunks progress):  40%|████      | 6/15 [00:12<00:11,  1.24s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [00:12<00:00,  1.19it/s]
+# Accounting: time=287 threads=1
+# Finished at Sun May 2 19:52:33 EDT 2021 with status 0
