@@ -24,6 +24,7 @@ from snowfall.decoding.graph import compile_HLG
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
+from snowfall.models.tdnnf import Tdnnf1a
 from snowfall.training.ctc_graph import build_ctc_topo
 from snowfall.training.mmi_graph import create_bigram_phone_lm
 from snowfall.training.mmi_graph import get_phone_symbols
@@ -67,7 +68,7 @@ def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
             f"Check failed: HLG.device ({HLG.device}) == nnet_output.device ({nnet_output.device})"
         # TODO(haowen): with a small `beam`, we may get empty `target_graph`,
         # thus `tot_scores` will be `inf`. Definitely we need to handle this later.
-        lattices = k2.intersect_dense_pruned(HLG, dense_fsa_vec, 10.0, 7.0, 30,
+        lattices = k2.intersect_dense_pruned(HLG, dense_fsa_vec, 20.0, 7.0, 30,
                                              10000)
 
         # lattices = k2.intersect_dense(HLG, dense_fsa_vec, 10.0)
@@ -164,7 +165,7 @@ def get_parser():
 
 def main():
     args = get_parser().parse_args()
-    exp_dir = Path('exp-lstm-adam-mmi-bigram-musan-dist')
+    exp_dir = Path('exp-tdnnf-adam-mmi-bigram')
     setup_logger('{}/log/log-decode'.format(exp_dir), log_level='debug')
 
     # load L, G, symbol_table
@@ -181,7 +182,7 @@ def main():
     # Note: Use "export CUDA_VISIBLE_DEVICES=N" to setup device id to N
     # device = torch.device('cuda', 1)
     device = torch.device('cuda')
-    model = TdnnLstm1b(num_features=80,
+    model = Tdnnf1a(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=3)
     model.P_scores = torch.nn.Parameter(P.scores.clone(), requires_grad=False)
@@ -221,7 +222,7 @@ def main():
     # load dataset
     feature_dir = Path('exp/data')
     logging.debug("About to get test cuts")
-    cuts_test = CutSet.from_json(feature_dir / 'cuts_safet_train.json.gz')
+    cuts_test = CutSet.from_json(feature_dir / 'cuts_safet_dev.json.gz')
 
     logging.info("About to create test dataset")
     test = K2SpeechRecognitionDataset(cuts_test)
@@ -245,9 +246,13 @@ def main():
                      HLG=HLG,
                      symbols=lexicon.words)
     s = ''
+    count=0
     for ref, hyp in results:
         s += f'ref={ref}\n'
         s += f'hyp={hyp}\n'
+        count += 1
+        if count >10:
+            break
     logging.info(s)
     # compute WER
     dists = [edit_distance(r, h) for r, h in results]

@@ -269,7 +269,7 @@ def main():
     setup_dist(rank=args.local_rank, world_size=args.world_size)
     fix_random_seed(42)
 
-    start_epoch = 0
+    start_epoch = 7
     num_epochs = 10
     use_adam = True
 
@@ -331,7 +331,7 @@ def main():
     #       torch.distributed.all_reduce() tends to hang indefinitely inside
     #       NCCL after ~3000 steps. With the current approach, we can still report
     #       the loss on the full validation set.
-    valid_sampler = SingleCutSampler(cuts_dev, max_frames=30000, world_size=1, rank=0)
+    valid_sampler = SingleCutSampler(cuts_dev, max_frames=10000, world_size=1, rank=0)
     logging.info("About to create dev dataloader")
     valid_dl = torch.utils.data.DataLoader(
         validate,
