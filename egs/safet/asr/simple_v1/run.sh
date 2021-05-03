@@ -8,7 +8,7 @@
 set -eou pipefail
 [ -f path.sh ] && . ./path.sh
 
-stage=6
+stage=5
 if [ $stage -le 0 ]; then
   local2/prepare_dict.sh data/local/lm data/local/dict_nosp
 fi
