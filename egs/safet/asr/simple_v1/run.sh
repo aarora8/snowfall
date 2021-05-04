@@ -8,7 +8,7 @@
 set -eou pipefail
 [ -f path.sh ] && . ./path.sh
 # ./run.sh | tee exp/logfile.txt
-stage=0
+stage=4
 if [ $stage -le 0 ]; then
   local2/prepare_dict.sh data/local/lm data/local/dict_nosp
 fi
@@ -40,7 +40,7 @@ if [ $stage -le 3 ]; then
     --max-order=3 \
     data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
 fi
-exit
+
 if [ $stage -le 4 ]; then
   ngpus=1
   python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
