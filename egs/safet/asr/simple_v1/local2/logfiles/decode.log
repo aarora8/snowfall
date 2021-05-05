@@ -1,0 +1,110 @@
+# Running on c21
+# Started at Wed May 5 12:28:56 EDT 2021
+# /home/aaror/miniconda3/envs/k2/bin/python mmi_bigram_decode.py 
+2021-05-05 12:29:00,801 INFO [lexicon.py:19] Loading L.fst
+2021-05-05 12:29:01,201 DEBUG [mmi_bigram_decode.py:181] About to load model
+2021-05-05 12:29:01,304 INFO [common.py:62] load checkpoint from exp-tdnnf-adam-mmi-bigram/epoch-6.pt
+2021-05-05 12:29:09,017 DEBUG [mmi_bigram_decode.py:201] Loading L_disambig.fst.txt
+2021-05-05 12:29:10,917 DEBUG [mmi_bigram_decode.py:204] Loading G.fst.txt
+2021-05-05 12:29:11,549 INFO [graph.py:42] Intersecting L and G
+2021-05-05 12:29:13,417 INFO [graph.py:44] LG shape = (1424530, None)
+2021-05-05 12:29:13,417 INFO [graph.py:45] Connecting L*G
+2021-05-05 12:29:13,417 INFO [graph.py:47] LG shape = (1424530, None)
+2021-05-05 12:29:13,417 INFO [graph.py:48] Determinizing L*G
+2021-05-05 12:29:16,846 INFO [graph.py:50] LG shape = (814453, None)
+2021-05-05 12:29:16,846 INFO [graph.py:51] Connecting det(L*G)
+2021-05-05 12:29:16,846 INFO [graph.py:53] LG shape = (814453, None)
+2021-05-05 12:29:16,846 INFO [graph.py:54] Removing disambiguation symbols on L*G
+2021-05-05 12:29:16,913 INFO [graph.py:60] Removing epsilons
+2021-05-05 12:29:17,998 INFO [graph.py:62] LG shape = (665654, None)
+2021-05-05 12:29:17,999 INFO [graph.py:63] Connecting rm-eps(det(L*G))
+2021-05-05 12:29:18,163 INFO [graph.py:65] LG shape = (460476, None)
+2021-05-05 12:29:18,176 INFO [graph.py:68] Arc sorting LG
+2021-05-05 12:29:18,259 INFO [graph.py:71] Composing ctc_topo LG
+2021-05-05 12:29:19,631 INFO [graph.py:74] Connecting LG
+2021-05-05 12:29:19,631 INFO [graph.py:77] Arc sorting LG
+2021-05-05 12:29:19,913 INFO [graph.py:79] LG is arc sorted: True
+2021-05-05 12:29:21,096 DEBUG [mmi_bigram_decode.py:222] About to get test cuts
+2021-05-05 12:29:21,442 INFO [mmi_bigram_decode.py:225] About to create test dataset
+2021-05-05 12:29:21,488 INFO [mmi_bigram_decode.py:230] About to create test dataloader
+2021-05-05 12:29:21,489 DEBUG [mmi_bigram_decode.py:233] convert HLG to device
+2021-05-05 12:29:21,581 DEBUG [mmi_bigram_decode.py:238] About to decode
+2021-05-05 12:29:21,749 DEBUG [__init__.py:47] Creating converter from 7 to 5
+2021-05-05 12:29:21,749 DEBUG [__init__.py:47] Creating converter from 5 to 7
+2021-05-05 12:29:21,749 DEBUG [__init__.py:47] Creating converter from 7 to 5
+2021-05-05 12:29:21,750 DEBUG [__init__.py:47] Creating converter from 5 to 7
+2021-05-05 12:29:23,185 INFO [mmi_bigram_decode.py:86] batch 0, cuts processed until now is 0/6300 (0.000000%)
+2021-05-05 12:29:26,545 INFO [mmi_bigram_decode.py:86] batch 10, cuts processed until now is 134/6300 (2.126984%)
+2021-05-05 12:29:29,896 INFO [mmi_bigram_decode.py:86] batch 20, cuts processed until now is 262/6300 (4.158730%)
+2021-05-05 12:29:33,142 INFO [mmi_bigram_decode.py:86] batch 30, cuts processed until now is 409/6300 (6.492063%)
+2021-05-05 12:29:36,484 INFO [mmi_bigram_decode.py:86] batch 40, cuts processed until now is 547/6300 (8.682540%)
+2021-05-05 12:29:39,860 INFO [mmi_bigram_decode.py:86] batch 50, cuts processed until now is 698/6300 (11.079365%)
+2021-05-05 12:29:43,128 INFO [mmi_bigram_decode.py:86] batch 60, cuts processed until now is 815/6300 (12.936508%)
+2021-05-05 12:29:46,757 INFO [mmi_bigram_decode.py:86] batch 70, cuts processed until now is 930/6300 (14.761905%)
+2021-05-05 12:29:49,874 INFO [mmi_bigram_decode.py:86] batch 80, cuts processed until now is 1063/6300 (16.873016%)
+2021-05-05 12:29:53,069 INFO [mmi_bigram_decode.py:86] batch 90, cuts processed until now is 1220/6300 (19.365079%)
+2021-05-05 12:29:56,326 INFO [mmi_bigram_decode.py:86] batch 100, cuts processed until now is 1365/6300 (21.666667%)
+2021-05-05 12:29:59,544 INFO [mmi_bigram_decode.py:86] batch 110, cuts processed until now is 1501/6300 (23.825397%)
+2021-05-05 12:30:02,772 INFO [mmi_bigram_decode.py:86] batch 120, cuts processed until now is 1624/6300 (25.777778%)
+2021-05-05 12:30:05,996 INFO [mmi_bigram_decode.py:86] batch 130, cuts processed until now is 1760/6300 (27.936508%)
+2021-05-05 12:30:09,251 INFO [mmi_bigram_decode.py:86] batch 140, cuts processed until now is 1897/6300 (30.111111%)
+2021-05-05 12:30:12,508 INFO [mmi_bigram_decode.py:86] batch 150, cuts processed until now is 2018/6300 (32.031746%)
+2021-05-05 12:30:15,763 INFO [mmi_bigram_decode.py:86] batch 160, cuts processed until now is 2145/6300 (34.047619%)
+2021-05-05 12:30:18,881 INFO [mmi_bigram_decode.py:86] batch 170, cuts processed until now is 2267/6300 (35.984127%)
+2021-05-05 12:30:22,132 INFO [mmi_bigram_decode.py:86] batch 180, cuts processed until now is 2401/6300 (38.111111%)
+2021-05-05 12:30:25,451 INFO [mmi_bigram_decode.py:86] batch 190, cuts processed until now is 2538/6300 (40.285714%)
+2021-05-05 12:30:28,600 INFO [mmi_bigram_decode.py:86] batch 200, cuts processed until now is 2660/6300 (42.222222%)
+2021-05-05 12:30:31,890 INFO [mmi_bigram_decode.py:86] batch 210, cuts processed until now is 2788/6300 (44.253968%)
+2021-05-05 12:30:35,063 INFO [mmi_bigram_decode.py:86] batch 220, cuts processed until now is 2910/6300 (46.190476%)
+2021-05-05 12:30:38,251 INFO [mmi_bigram_decode.py:86] batch 230, cuts processed until now is 3050/6300 (48.412698%)
+2021-05-05 12:30:41,407 INFO [mmi_bigram_decode.py:86] batch 240, cuts processed until now is 3167/6300 (50.269841%)
+2021-05-05 12:30:44,645 INFO [mmi_bigram_decode.py:86] batch 250, cuts processed until now is 3312/6300 (52.571429%)
+2021-05-05 12:30:47,870 INFO [mmi_bigram_decode.py:86] batch 260, cuts processed until now is 3448/6300 (54.730159%)
+2021-05-05 12:30:51,273 INFO [mmi_bigram_decode.py:86] batch 270, cuts processed until now is 3594/6300 (57.047619%)
+2021-05-05 12:30:54,382 INFO [mmi_bigram_decode.py:86] batch 280, cuts processed until now is 3716/6300 (58.984127%)
+2021-05-05 12:30:57,712 INFO [mmi_bigram_decode.py:86] batch 290, cuts processed until now is 3855/6300 (61.190476%)
+2021-05-05 12:31:01,359 INFO [mmi_bigram_decode.py:86] batch 300, cuts processed until now is 3978/6300 (63.142857%)
+2021-05-05 12:31:04,901 INFO [mmi_bigram_decode.py:86] batch 310, cuts processed until now is 4096/6300 (65.015873%)
+2021-05-05 12:31:08,486 INFO [mmi_bigram_decode.py:86] batch 320, cuts processed until now is 4225/6300 (67.063492%)
+2021-05-05 12:31:11,571 INFO [mmi_bigram_decode.py:86] batch 330, cuts processed until now is 4357/6300 (69.158730%)
+2021-05-05 12:31:14,825 INFO [mmi_bigram_decode.py:86] batch 340, cuts processed until now is 4477/6300 (71.063492%)
+2021-05-05 12:31:18,211 INFO [mmi_bigram_decode.py:86] batch 350, cuts processed until now is 4614/6300 (73.238095%)
+2021-05-05 12:31:21,455 INFO [mmi_bigram_decode.py:86] batch 360, cuts processed until now is 4747/6300 (75.349206%)
+2021-05-05 12:31:24,555 INFO [mmi_bigram_decode.py:86] batch 370, cuts processed until now is 4883/6300 (77.507937%)
+2021-05-05 12:31:27,882 INFO [mmi_bigram_decode.py:86] batch 380, cuts processed until now is 5001/6300 (79.380952%)
+2021-05-05 12:31:31,017 INFO [mmi_bigram_decode.py:86] batch 390, cuts processed until now is 5117/6300 (81.222222%)
+2021-05-05 12:31:34,194 INFO [mmi_bigram_decode.py:86] batch 400, cuts processed until now is 5235/6300 (83.095238%)
+2021-05-05 12:31:37,557 INFO [mmi_bigram_decode.py:86] batch 410, cuts processed until now is 5368/6300 (85.206349%)
+2021-05-05 12:31:40,991 INFO [mmi_bigram_decode.py:86] batch 420, cuts processed until now is 5496/6300 (87.238095%)
+2021-05-05 12:31:44,199 INFO [mmi_bigram_decode.py:86] batch 430, cuts processed until now is 5615/6300 (89.126984%)
+2021-05-05 12:31:47,312 INFO [mmi_bigram_decode.py:86] batch 440, cuts processed until now is 5759/6300 (91.412698%)
+2021-05-05 12:31:50,576 INFO [mmi_bigram_decode.py:86] batch 450, cuts processed until now is 5899/6300 (93.634921%)
+2021-05-05 12:31:54,175 INFO [mmi_bigram_decode.py:86] batch 460, cuts processed until now is 6009/6300 (95.380952%)
+2021-05-05 12:31:57,631 INFO [mmi_bigram_decode.py:86] batch 470, cuts processed until now is 6143/6300 (97.507937%)
+2021-05-05 12:32:01,050 INFO [mmi_bigram_decode.py:86] batch 480, cuts processed until now is 6274/6300 (99.587302%)
+2021-05-05 12:32:01,368 INFO [mmi_bigram_decode.py:252] ref=['<UNK>', 'okay', 'so', "i'm", 'going', 'to', 'i', 'guess', 'it', "doesn't", 'cost', 'anything', 'to', 'move', 'over', 'here', 'right']
+hyp=[]
+ref=['bravo', 'eight', 'romeo', 'three', '<UNK>', 'so', 'ooh', "someone's", 'in', 'the', 'danger', 'zone', 'of', 'the', '<UNK>', 'game', 'room', 'there']
+hyp=[]
+ref=['<UNK>', 'so', "there's", 'smoke', 'with', 'me', 'here', 'in', 'the', 'master', 'bath']
+hyp=[]
+ref=['so', "i'll", 'start', 'taking', 'her', 'to', 'the', 'door', '<UNK>', 'so']
+hyp=[]
+ref=['oh', '<UNK>', 'crap', 'forgot', 'to', 'roll', 'for', 'a', 'point', 'of', 'interest', 'as', 'well', '<UNK>', 'romeo']
+hyp=[]
+ref=['fire', 'is', 'spreading', 'at', 'romeo', 'six']
+hyp=[]
+ref=["i'm", 'going', 'to', 'put', 'that', 'out', 'probably', 'before', 'i', 'try', 'to', 'get', 'out', 'of', 'here']
+hyp=[]
+ref=['<UNK>', 'copy', '<UNK>', '<UNK>']
+hyp=[]
+ref=["that's", 'an', 'explosion']
+hyp=[]
+ref=["it's", 'a', 'dog']
+hyp=[]
+ref=['bravo', 'two']
+hyp=[]
+
+2021-05-05 12:32:01,420 INFO [mmi_bigram_decode.py:262] %WER 100.00% [63402 / 63402, 0 ins, 63401 del, 1 sub ]
+# Accounting: time=186 threads=1
+# Finished at Wed May 5 12:32:02 EDT 2021 with status 0
