@@ -7,4 +7,4 @@ conda activate k2
 
 #. ./cmd.sh
 #utils/queue.pl --mem 10G --gpu 1 train.log /home/aaror/miniconda3/envs/k2/bin/python mmi_bigram_train.py
-
+#utils/queue.pl --mem 10G --gpu 1 train.log /home/aaror/miniconda3/envs/k2/bin/python mmi_bigram_decode.py

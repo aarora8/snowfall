@@ -159,7 +159,7 @@ def print_transition_probabilities(P: k2.Fsa, phone_symbol_table: SymbolTable,
 def get_parser():
     import argparse
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--epoch', default=9, type=int)
+    parser.add_argument('--epoch', default=6, type=int)
     return parser
 
 
@@ -226,7 +226,7 @@ def main():
     test = K2SpeechRecognitionDataset(cuts_test)
     # reduced max frames due to memory issue
     # sampler = SingleCutSampler(cuts_test, max_frames=40000)
-    sampler = SingleCutSampler(cuts_test, max_frames=5000)
+    sampler = SingleCutSampler(cuts_test, max_frames=40000)
     logging.info("About to create test dataloader")
     test_dl = torch.utils.data.DataLoader(test, batch_size=None, sampler=sampler, num_workers=1)
 
