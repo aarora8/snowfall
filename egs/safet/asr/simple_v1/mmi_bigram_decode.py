@@ -179,8 +179,6 @@ def main():
     ctc_topo = k2.arc_sort(build_ctc_topo(phone_ids_with_blank))
 
     logging.debug("About to load model")
-    # Note: Use "export CUDA_VISIBLE_DEVICES=N" to setup device id to N
-    # device = torch.device('cuda', 1)
     device = torch.device('cuda')
     model = Tdnnf1a(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
@@ -226,13 +224,11 @@ def main():
 
     logging.info("About to create test dataset")
     test = K2SpeechRecognitionDataset(cuts_test)
+    # reduced max frames due to memory issue
+    # sampler = SingleCutSampler(cuts_test, max_frames=40000)
     sampler = SingleCutSampler(cuts_test, max_frames=5000)
     logging.info("About to create test dataloader")
     test_dl = torch.utils.data.DataLoader(test, batch_size=None, sampler=sampler, num_workers=1)
-
-    #  if not torch.cuda.is_available():
-    #  logging.error('No GPU detected!')
-    #  sys.exit(-1)
 
     logging.debug("convert HLG to device")
     HLG = HLG.to(device)
