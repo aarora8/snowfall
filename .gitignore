@@ -2,6 +2,8 @@
 data*/
 !snowfall/data
 exp*/
+archive*/
+tools*/
 
 .DS_Store
 .vscode/
