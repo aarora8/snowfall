@@ -8,9 +8,9 @@
 set -eou pipefail
 [ -f path.sh ] && . ./path.sh
 # ./run.sh | tee exp/logfile.txt
-stage=4
+stage=0
 if [ $stage -le 0 ]; then
-  local2/prepare_dict.sh data/local/lm data/local/dict_nosp
+  local/prepare_dict.sh archive/corpora_data/data/local/lm data/local/dict_nosp
 fi
 
 if [ $stage -le 1 ]; then

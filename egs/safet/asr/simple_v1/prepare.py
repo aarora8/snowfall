@@ -67,8 +67,8 @@ def main():
     output_dir = Path('exp/data')
     print('safet manifest preparation:')
     safet_manifests = prepare_safet(
-        corpus_dir='/export/c03/aarora8/snowfall/egs/safet/asr/simple_v1/corpora_data/',
-        lexicon_dir='/export/c03/aarora8/snowfall/egs/safet/asr/simple_v1/data/local/',
+        corpus_dir='/export/c03/aarora8/snowfall/egs/safet/asr/simple_v1/archive/corpora_data/',
+        lexicon_dir='/export/c03/aarora8/snowfall/egs/safet/asr/simple_v1/archive/corpora_data/data/local/lm/',
         output_dir=output_dir
     )
     print('Feature extraction:')
