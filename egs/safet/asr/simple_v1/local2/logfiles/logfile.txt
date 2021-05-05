@@ -1,0 +1,18 @@
+local/prepare_lang.sh --position-dependent-phones false data/local/dict_nosp <UNK> data/local/lang_tmp_nosp data/lang_nosp
+**Creating data/local/dict_nosp/lexiconp.txt from data/local/dict_nosp/lexicon.txt
+safet manifest preparation:
+Feature extraction:
+Processing train
+Processing dev
+LM preparation
+local2/train_lm_srilm.sh 
+-------------------------------------
+Building an SRILM language model     
+-------------------------------------
+Using train text: exp/data/lm_train_text
+Using dev text  : exp/data/lm_dev_text
+vocab contains 125092 lines, 0 words
+exp/data/lm_train_text contains 320035 words, 48519 sentences
+train.txt contains 368554 words, 48519 sentences
+exp/data/lm_dev_text contains 19034 words, 2100 sentences
+data/local/lm/dev.txt contains 21134 words, 2100 sentences
