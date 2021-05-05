@@ -269,7 +269,7 @@ def main():
     setup_dist(rank=args.local_rank, world_size=args.world_size)
     fix_random_seed(42)
 
-    start_epoch = 3
+    start_epoch = 0
     num_epochs = 10
     use_adam = True
 
