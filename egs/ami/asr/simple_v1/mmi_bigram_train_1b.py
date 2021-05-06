@@ -296,9 +296,9 @@ def main():
     feature_dir = Path('exp/data')
     logging.info("About to get train cuts")
     cuts_train = CutSet.from_json(feature_dir /
-                                  'cuts_safet_train.json.gz')
+                                  'cuts_ami_train.json.gz')
     logging.info("About to get dev cuts")
-    cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev.json.gz')
+    cuts_dev = CutSet.from_json(feature_dir / 'cuts_ami_dev.json.gz')
     train = K2SpeechRecognitionDataset(cuts_train)
     if args.bucketing_sampler:
         logging.info('Using BucketingSampler.')

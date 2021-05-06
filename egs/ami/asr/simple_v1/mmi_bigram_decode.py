@@ -263,29 +263,29 @@ def main():
     # load dataset
     feature_dir = Path('exp/data')
     logging.debug("About to get test cuts")
-    cuts_test = CutSet.from_json(feature_dir / 'cuts_safet_dev.json.gz')
+    for partition in ['dev', 'test']:
+        cuts_test = CutSet.from_json(feature_dir / f'cuts_ami_{partition}.json.gz')
+        logging.info(f"About to create {partition} dataset")
+        test = K2SpeechRecognitionDataset(cuts_test)
+        # reducing max frames due to memory issue
+        # sampler = SingleCutSampler(cuts_test, max_frames=40000)
+        sampler = SingleCutSampler(cuts_test, max_frames=10000)
+        logging.info(f"About to create {partition} dataloader")
+        test_dl = torch.utils.data.DataLoader(test, batch_size=None, sampler=sampler, num_workers=1)
 
-    logging.info("About to create test dataset")
-    test = K2SpeechRecognitionDataset(cuts_test)
-    # reduced max frames due to memory issue
-    # sampler = SingleCutSampler(cuts_test, max_frames=40000)
-    sampler = SingleCutSampler(cuts_test, max_frames=10000)
-    logging.info("About to create test dataloader")
-    test_dl = torch.utils.data.DataLoader(test, batch_size=None, sampler=sampler, num_workers=1)
+        logging.debug("convert HLG to device")
+        HLG = HLG.to(device)
+        HLG.aux_labels = k2.ragged.remove_values_eq(HLG.aux_labels, 0)
+        HLG.requires_grad_(False)
 
-    logging.debug("convert HLG to device")
-    HLG = HLG.to(device)
-    HLG.aux_labels = k2.ragged.remove_values_eq(HLG.aux_labels, 0)
-    HLG.requires_grad_(False)
-
-    logging.debug("About to decode")
-    results = decode(dataloader=test_dl,
+        logging.debug("About to decode")
+        results = decode(dataloader=test_dl,
                      model=model,
                      device=device,
                      HLG=HLG,
                      symbols=lexicon.words)
 
-    calculate_WER(results)
+        calculate_WER(results)
 
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
