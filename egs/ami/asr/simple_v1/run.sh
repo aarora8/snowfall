@@ -27,7 +27,7 @@ if [ $stage -le 2 ]; then
   python3 ./prepare.py
   #utils/queue.pl --mem 30G train.log /home/aaror/miniconda3/envs/k2/bin/python3 prepare.py
 fi
-
+exit
 if [ $stage -le 3 ]; then
   echo "LM preparation"
   local2/prepare_lm.py
