@@ -157,12 +157,13 @@ def WER_output_filter(text: list):
         word = re.sub('\s+\)\)', '))', word)
         word = re.sub('\(\(<UNK>\)\)', '<UNK>', word)
         word = re.sub('%[a-z]+', '<UNK>', word)
-        word = re.sub(' -- ', ' ', word)
+        word = re.sub(' -- ', '', word)
         word = re.sub(' --$', '', word)
         word = re.sub('\s+', ' ', word)
         word = re.sub('\s+$', '', word)
-        word = re.sub('<UNK>', ' ', word)
-        cleaned_text.append(word)
+        word = re.sub('<UNK>', '', word)
+        if word:
+            cleaned_text.append(word)
     return(cleaned_text)
 
 
