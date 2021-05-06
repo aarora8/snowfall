@@ -148,39 +148,43 @@ def print_transition_probabilities(P: k2.Fsa, phone_symbol_table: SymbolTable,
 
 
 def WER_output_filter(text: list):
-    cleaned_text = []
+    filtered_text = []
     for word in text:
+        word = word.upper()
         word = re.sub(r'[.,?]', ' ', word)
         word = re.sub(r'{[^}]+}', '<UNK>', word)
-        word = re.sub('<unk>', '<UNK>', word)
-        word = re.sub('<noise>', '<UNK>', word)
+        word = re.sub('<NOISE>', '<UNK>', word)
         word = re.sub('\s+\)\)', '))', word)
         word = re.sub('\(\(<UNK>\)\)', '<UNK>', word)
-        word = re.sub('%[a-z]+', '<UNK>', word)
+        word = re.sub('%[A-Z]+', '<UNK>', word)
+        word = re.sub('--', '', word)
         word = re.sub(' -- ', '', word)
         word = re.sub(' --$', '', word)
         word = re.sub('\s+', ' ', word)
         word = re.sub('\s+$', '', word)
         word = re.sub('<UNK>', '', word)
+        word = word.strip()
         if word:
-            cleaned_text.append(word)
-    return(cleaned_text)
+            filtered_text.append(word)
+    return(filtered_text)
 
 
 def calculate_WER(results: list):
+    #  compute WER with WER_output_filter
     s = ''
-    count=0
-    # compute WER with WER_output_filter
     dists = []
+    filtered_results = []
     for ref, hyp in results:
          ref = WER_output_filter(ref)
          hyp = WER_output_filter(hyp)
-         dists.append(edit_distance(ref, hyp))
-         s += f'ref={ref}\n'
-         s += f'hyp={hyp}\n'
-         #count += 1
-         #if count >10:
-         #   break
+         if len(ref) != 0:
+             min_distance = edit_distance(ref, hyp)
+             dists.append(min_distance)
+             filtered_results.append([ref, hyp])
+             s += f'ref={ref}\n'
+             s += f'hyp={hyp}\n'
+             s += f'len={len(ref)}\n'
+             s += f'error={min_distance}\n'
     logging.info(s)
 
     # print kaldi-like error
@@ -188,7 +192,7 @@ def calculate_WER(results: list):
         key: sum(dist[key] for dist in dists)
         for key in ['sub', 'ins', 'del', 'total']
     }
-    total_words = sum(len(ref) for ref, _ in results)
+    total_words = sum(len(ref) for ref, _ in filtered_results)
     logging.info(
         f'%WER {errors["total"] / total_words:.2%} '
         f'[{errors["total"]} / {total_words}, {errors["ins"]} ins, {errors["del"]} del, {errors["sub"]} sub ]'
