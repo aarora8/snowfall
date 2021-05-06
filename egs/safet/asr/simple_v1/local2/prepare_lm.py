@@ -7,10 +7,23 @@ from lhotse import load_manifest
 from snowfall.common import setup_logger
 import re
 
+WORDLIST = dict()
+IV_WORDS = dict()
+OOV_WORDS = dict()
+UNK = '<UNK>'
+REPLACE_UNKS = True
+
 setup_logger('exp/log/prepare_lm')
 if Path(f'data/lang_nosp/G.fst.txt').is_file():
     logging.info(f'G.fst.txt already exists.')
 logging.info(f'Processing language')
+
+
+def read_lexicon_words(lexicon):
+    with open(lexicon, 'r', encoding='utf-8') as f:
+        for line in f:
+            line = re.sub(r'(?s)\s.*', '', line)
+            WORDLIST[line] = 1
 
 
 def case_normalize(w):
@@ -83,6 +96,8 @@ def main():
     # Read Lhotse supervisions, filter out silence regions, remove special non-lexical tokens,
     # and write the sentences to a text file for LM training.
     logging.info(f'Preparing LM training text.')
+    lexicon =  'data/local/dict_nosp/lexicon/lexicon_raw_nosil.txt'
+    read_lexicon_words(lexicon)
     sups = load_manifest('exp/data/supervisions_train.json').filter(lambda s: s.text != '<silence>')
     f = open('exp/data/lm_train_text', 'w')
     for s in sups:
@@ -92,7 +107,8 @@ def main():
     f = open('exp/data/lm_dev_text', 'w')
     for s in sups:
         cleaned_transcrition = process_transcript(s.text)
-        print(cleaned_transcrition, file=f)
+        if cleaned_transcrition is not None:
+            print(cleaned_transcrition, file=f)
 
 
 if __name__ == '__main__':
