@@ -14,8 +14,11 @@ mkdir -p $dst_dir/lexicon
 #Remove (1)  (sed 's/([0-9])//g') such as
 #    ABKHAZIAN(1)  AE0 B K AE1 Z IY0 AH0 N     
 #    ABKHAZIAN   AE0 B K AE1 Z IY0 AH0 N
+#Remove the first 70 lines which are for special symbols such as
+#    "CLOSE-QUOTE  K L OW1 Z K W OW1 T
+#    "DOUBLE-QUOTE  D AH1 B AH0 L K W OW1 T
 curl http://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/cmudict-0.7b > $dst_dir/lexicon/cmudict-0.7b
-uconv -f iso-8859-1 -t utf-8 $dst_dir/lexicon/cmudict-0.7b| grep -v ';;' | sed 's/([0-9])//g' > $lexicon_raw_nosil
+uconv -f iso-8859-1 -t utf-8 $dst_dir/lexicon/cmudict-0.7b| grep -v ';;' | sed 's/([0-9])//g' | sed 1,70d  > $lexicon_raw_nosil
 
 echo "Preparing phone lists"
 (echo SIL; echo SPN;) > $silence_phones
