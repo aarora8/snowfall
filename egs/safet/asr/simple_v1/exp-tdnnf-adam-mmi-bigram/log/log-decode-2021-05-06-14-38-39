@@ -1,0 +1,38 @@
+2021-05-06 14:38:39,370 INFO [lexicon.py:19] Loading L.fst
+2021-05-06 14:38:39,698 DEBUG [mmi_bigram_decode.py:224] About to load model
+2021-05-06 14:38:39,776 INFO [common.py:62] load checkpoint from exp-tdnnf-adam-mmi-bigram/epoch-6.pt
+2021-05-06 14:38:48,698 DEBUG [mmi_bigram_decode.py:259] Loading pre-compiled LG
+2021-05-06 14:38:49,952 DEBUG [mmi_bigram_decode.py:265] About to get test cuts
+2021-05-06 14:38:50,210 INFO [mmi_bigram_decode.py:268] About to create test dataset
+2021-05-06 14:38:50,259 INFO [mmi_bigram_decode.py:273] About to create test dataloader
+2021-05-06 14:38:50,260 DEBUG [mmi_bigram_decode.py:276] convert HLG to device
+2021-05-06 14:38:50,387 DEBUG [mmi_bigram_decode.py:281] About to decode
+2021-05-06 14:38:50,515 DEBUG [__init__.py:47] Creating converter from 7 to 5
+2021-05-06 14:38:50,516 DEBUG [__init__.py:47] Creating converter from 5 to 7
+2021-05-06 14:38:50,516 DEBUG [__init__.py:47] Creating converter from 7 to 5
+2021-05-06 14:38:50,516 DEBUG [__init__.py:47] Creating converter from 5 to 7
+2021-05-06 14:38:52,293 INFO [mmi_bigram_decode.py:79] batch 0, cuts processed until now is 0/6300 (0.000000%)
+2021-05-06 14:38:55,660 INFO [mmi_bigram_decode.py:181] ref=['<UNK>', 'ALRIGHT', 'OH', 'MAN', '<UNK>', "I'M", 'ASSUMING', 'THE', '<UNK>', '<UNK>', 'ON', 'THE', 'DINING', 'ROOM', 'IS', 'A', 'LITTLE', 'BIT', 'SAFE', '<UNK>', 'MASTER', 'BATH', 'IS', 'LOOKING', 'A', 'LITTLE', 'WORSE', 'SITUATION', 'WITH', 'THE', 'SMOKE', 'NEARBY']
+hyp=['ALRIGHT', "I'M", 'IN', 'ALMOST', 'WITH', 'A', '<UNK>', 'IN', 'THE', 'DINING', 'ROOM', 'SO', "IT'LL", 'BE', 'SAFE', 'MASTER', 'BATHROOM', 'INTO', 'THE', '<UNK>', 'SITUATION', 'OF', 'THE', 'SMOKE', 'NEARBY']
+ref=['COPY', 'THAT', 'I', 'AM', 'CHECKING', 'THIS', '<UNK>', '<UNK>', '<UNK>', 'IT', 'IS', 'A', 'PERSON', '<UNK>', 'SO', 'I', 'AM', 'MOVING', 'WITH']
+hyp=['COPY', 'THAT', 'I', 'AM', 'CHECKING', 'THIS', '<UNK>', 'IT', 'IS', 'A', 'PERSON', 'SO', 'I', 'AM', 'MOVING', 'WITH', 'THEM']
+ref=['ALRIGHT', 'WE', 'GOT', 'FIRE', 'FIRE', '<UNK>', 'FIRE', 'FIRE', 'DAMAGE', 'TO', 'THIS', 'WALL', '<UNK>', '<UNK>']
+hyp=['ALRIGHT', 'WE', 'GOT', 'FIRE', 'FIRE', 'FIRE', 'FIRE', 'DAMAGE', 'TO', 'THIS', 'WALL', 'YELLOW', '<UNK>']
+ref=['PERSON', 'OF', 'INTEREST', 'IN', 'THE', 'DINING', 'ROOM', "I'M", 'GOING', 'TO', 'GO', 'AHEAD', 'AND', 'TRY', 'AND', 'GET', 'THEM', 'AT', 'THIS', 'TIME']
+hyp=['PERSON', 'OF', 'INTEREST', 'IN', 'THE', 'DINING', 'ROOM', "I'M", 'GOING', 'TO', 'GO', 'AHEAD', 'AND', 'TRY', 'AND', 'GET', 'THEM', 'AT', 'THIS', 'TIME']
+ref=['GO', 'OVER', 'TO', 'THE', 'SMALL', 'BEDROOM', 'WALL', '<UNK>', 'START', 'CHOPPING', 'IT', 'DOWN', 'BECAUSE', 'I', "DON'T", 'LIKE', 'THE', 'LOOK', 'OF', 'THAT', "KIDS'", 'BEDROOM', 'NEXT', 'TO', 'THE', 'SMALL', 'BATHROOM', 'ROLLING', 'FOR', 'FIRE']
+hyp=['YELLOW', 'OVER', 'TO', 'THE', 'SMALL', 'BEDROOM', 'WALL', 'START', 'CHOPPING', 'DOWN', 'BECAUSE', 'I', "DON'T", 'LIKE', 'A', 'LOOK', 'AT', 'THAT', "KID'S", 'BEDROOM', 'NEXT', 'TO', 'THE', 'SMALL', 'BATHROOM', 'ROLLING', 'FOR', 'FIRE']
+ref=['<UNK>', "WE'VE", 'GOT', 'A', 'PERSON', 'HERE', 'IN', 'THE', 'CORNER', '<UNK>', "WE'LL", 'TRY', 'TO', 'RESCUE', '<UNK>', '<UNK>']
+hyp=['GOT', 'A', 'PERSON', 'IDENTIFIED', 'A', 'MESS']
+ref=['SO', "I'VE", 'USED', 'TWO', 'POINTS', 'TO', 'REMOVE', '<UNK>', 'THE', 'DUDE', 'FROM', 'THERE']
+hyp=['SO', 'I', 'USE', 'TWO', 'POINTS', 'TO', 'REMOVE', 'THIS', 'TO', 'FROM', 'THERE']
+ref=['AND', 'FOR', 'A', 'POINT', 'OF', 'INTEREST', '<UNK>', 'BRAVO', 'THREE', 'ROMEO', 'FIVE']
+hyp=['TEMPERATE', 'POINT', 'OF', 'INTEREST', 'BRAVO', 'THREE', 'ROMEO', 'FIVE']
+ref=['<UNK>', '<UNK>', 'OKAY', "I'M", 'GOING', 'TO', 'USE', 'FOUR', 'ACTION', 'POINTS', 'TO']
+hyp=['OKAY', "I'LL", 'USE', 'FOUR', 'ACTION', 'POINTS', 'TO']
+ref=['<UNK>', 'AND', '<UNK>', 'THAT', 'IS']
+hyp=['AND', 'THAT', 'IS', 'MY']
+ref=['<UNK>', 'LOOKS', 'LIKE', 'WE', 'HAVE', 'A', 'PERSON']
+hyp=['LOOKS', 'LIKE', 'WE', 'HAVE', 'A', 'PERSON']
+
+2021-05-06 14:38:55,711 INFO [mmi_bigram_decode.py:196] %WER 42.29% [697 / 1648, 32 ins, 407 del, 258 sub ]
