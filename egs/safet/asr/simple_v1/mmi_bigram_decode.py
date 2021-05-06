@@ -185,7 +185,7 @@ def calculate_WER(results: list):
 def get_parser():
     import argparse
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--epoch', default=4, type=int)
+    parser.add_argument('--epoch', default=9, type=int)
     return parser
 
 
@@ -269,30 +269,6 @@ def main():
                      symbols=lexicon.words)
 
     calculate_WER(results)
-#    s = ''
-#    count=0
-#    for ref, hyp in results:
-#        s += f'ref={ref}\n'
-#        s += f'hyp={hyp}\n'
-#        count += 1
-#        if count >10:
-#            break
-#    logging.info(s)
-#    # compute WER
-#    
-#    dists = [edit_distance(r, h) for r, h in results]
-#    errors = {
-#        key: sum(dist[key] for dist in dists)
-#        for key in ['sub', 'ins', 'del', 'total']
-#    }
-#    total_words = sum(len(ref) for ref, _ in results)
-#    # Print Kaldi-like message:
-#    # %WER 8.20 [ 4459 / 54402, 695 ins, 427 del, 3337 sub ]
-#    logging.info(
-#        f'%WER {errors["total"] / total_words:.2%} '
-#        f'[{errors["total"]} / {total_words}, {errors["ins"]} ins, {errors["del"]} del, {errors["sub"]} sub ]'
-#    )
-
 
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
