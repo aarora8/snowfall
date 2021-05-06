@@ -84,7 +84,8 @@ def main():
                 supervisions=manifests['supervisions']
             )
             cut_set = cut_set.trim_to_supervisions()
-            cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
+            if 'train' in partition:
+                cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
                 storage_path=f'{output_dir}/feats_safet_{partition}',

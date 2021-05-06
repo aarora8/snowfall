@@ -8,6 +8,7 @@ import logging
 import numpy as np
 import os
 import torch
+import re
 from k2 import Fsa, SymbolTable
 from kaldialign import edit_distance
 from pathlib import Path
@@ -51,27 +52,17 @@ def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
         assert feature.ndim == 3
 
         feature = feature.to(device)
-        # at entry, feature is [N, T, C]
         feature = feature.permute(0, 2, 1)  # now feature is [N, C, T]
         with torch.no_grad():
             nnet_output = model(feature)
-        # nnet_output is [N, C, T]
         nnet_output = nnet_output.permute(0, 2,
                                           1)  # now nnet_output is [N, T, C]
 
-        #  blank_bias = -3.0
-        #  nnet_output[:, :, 0] += blank_bias
-
         dense_fsa_vec = k2.DenseFsaVec(nnet_output, supervision_segments)
-        # assert HLG.is_cuda()
         assert HLG.device == nnet_output.device, \
             f"Check failed: HLG.device ({HLG.device}) == nnet_output.device ({nnet_output.device})"
-        # TODO(haowen): with a small `beam`, we may get empty `target_graph`,
-        # thus `tot_scores` will be `inf`. Definitely we need to handle this later.
         lattices = k2.intersect_dense_pruned(HLG, dense_fsa_vec, 20.0, 7.0, 30,
                                              10000)
-
-        # lattices = k2.intersect_dense(HLG, dense_fsa_vec, 10.0)
         best_paths = k2.shortest_path(lattices, use_double_scores=True)
         assert best_paths.shape[0] == len(texts)
         hyps = get_texts(best_paths, indices)
@@ -156,26 +147,47 @@ def print_transition_probabilities(P: k2.Fsa, phone_symbol_table: SymbolTable,
         f.write(str(x))
 
 
+def WER_output_filter(text: list):
+    cleaned_text = []
+    for word in text:
+        word = re.sub(r'[.,?]', ' ', word)
+        word = re.sub(r'{[^}]+}', '<UNK>', word)
+        word = re.sub('<unk>', '<UNK>', word)
+        word = re.sub('<noise>', '<UNK>', word)
+        word = re.sub('\s+\)\)', '))', word)
+        word = re.sub('\(\(<UNK>\)\)', '<UNK>', word)
+        word = re.sub('%[a-z]+', '<UNK>', word)
+        word = re.sub(' -- ', ' ', word)
+        word = re.sub(' --$', '', word)
+        word = re.sub('\s+', ' ', word)
+        word = re.sub('\s+$', '', word)
+        word = re.sub('<UNK>', ' ', word)
+        cleaned_text.append(word)
+    return(cleaned_text)
+
+
 def calculate_WER(results: list):
     s = ''
     count=0
+    # compute WER with WER_output_filter
+    dists = []
     for ref, hyp in results:
-        s += f'ref={ref}\n'
-        s += f'hyp={hyp}\n'
-        count += 1
-        if count >10:
-            break
+         ref = WER_output_filter(ref)
+         hyp = WER_output_filter(hyp)
+         dists.append(edit_distance(ref, hyp))
+         s += f'ref={ref}\n'
+         s += f'hyp={hyp}\n'
+         #count += 1
+         #if count >10:
+         #   break
     logging.info(s)
-    # compute WER
 
-    dists = [edit_distance(r, h) for r, h in results]
+    # print kaldi-like error
     errors = {
         key: sum(dist[key] for dist in dists)
         for key in ['sub', 'ins', 'del', 'total']
     }
     total_words = sum(len(ref) for ref, _ in results)
-    # Print Kaldi-like message:
-    # %WER 8.20 [ 4459 / 54402, 695 ins, 427 del, 3337 sub ]
     logging.info(
         f'%WER {errors["total"] / total_words:.2%} '
         f'[{errors["total"]} / {total_words}, {errors["ins"]} ins, {errors["del"]} del, {errors["sub"]} sub ]'
