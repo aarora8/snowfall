@@ -7,10 +7,11 @@
 
 set -eou pipefail
 [ -f path.sh ] && . ./path.sh
+. ./cmd.sh
 # ./run.sh | tee exp/logfile.txt
 stage=0
 if [ $stage -le 0 ]; then
-  local/prepare_dict.sh archive/corpora_data/data/local/lm data/local/dict_nosp
+  local2/prepare_dict.sh
 fi
 
 if [ $stage -le 1 ]; then
