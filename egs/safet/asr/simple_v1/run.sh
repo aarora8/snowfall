@@ -9,7 +9,7 @@ set -eou pipefail
 [ -f path.sh ] && . ./path.sh
 . ./cmd.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
-stage=5
+stage=0
 if [ $stage -le 0 ]; then
   local2/prepare_dict.sh
 fi

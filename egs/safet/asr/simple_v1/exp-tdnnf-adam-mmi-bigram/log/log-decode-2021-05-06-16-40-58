@@ -1,3 +1,0 @@
-2021-05-06 16:40:58,651 INFO [lexicon.py:19] Loading L.fst
-2021-05-06 16:40:58,751 DEBUG [mmi_bigram_decode.py:224] About to load model
-2021-05-06 16:40:58,814 INFO [common.py:62] load checkpoint from exp-tdnnf-adam-mmi-bigram/epoch-9.pt
