@@ -61,30 +61,7 @@ def locate_corpus(*corpus_dirs):
     sys.exit(1)
 
 
-def get_parser():
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument(
-        '--num-jobs',
-        type=int,
-        default=min(15, os.cpu_count()),
-        help='When enabled, use 960h LibriSpeech.')
-    parser.add_argument(
-        '--full-libri',
-        type=str2bool,
-        default=False,
-        help='When enabled, use 960h LibriSpeech.')
-    return parser
-
-
 def main():
-    args = get_parser().parse_args()
-    if args.full_libri:
-        dataset_parts = ('dev-clean', 'dev-other', 'test-clean', 'test-other',
-                         'train-clean-100', 'train-clean-360', 'train-other-500')
-    else:
-        dataset_parts = ('dev-clean', 'dev-other', 'test-clean', 'test-other')
-
-    print("Parts we will prepare: ", dataset_parts)
     output_dir = Path('exp/data')
     print('ami manifest preparation:')
     #download_ami('/export/corpora5/amicorpus/','/export/c03/aarora8/snowfall/egs/ami/asr/simple_v1/exp/data/')
