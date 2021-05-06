@@ -9,7 +9,6 @@ echo "-------------------------------------"
 
 
 tgtdir=data/local/lm
-outlm=data/local/lm/lm.gz
 train_text=exp/data/lm_train_text
 dev_text=exp/data/lm_dev_text
 words_file=data/lang_nosp/words.txt
@@ -37,3 +36,7 @@ echo $dev_text contains `cat $dev_text | perl -ane 'BEGIN{$w=$s=0;}{$w+=@F; $w--
 echo $tgtdir/dev.txt contains `cat $tgtdir/dev.txt | perl -ane 'BEGIN{$w=$s=0;}{$w+=@F;  $s++;}END{print "$w words, $s sentences\n";}'`
 
 ngram-count -lm $tgtdir/lm.gz -kndiscount1 -gt1min 0 -kndiscount2 -gt2min 1 -kndiscount3 -gt3min 2 -order 3 -text $tgtdir/train.txt -vocab $tgtdir/vocab -unk -sort -map-unk "$oov_symbol"
+
+ngram -order 3 -lm $tgtdir/lm.gz -unk -map-unk "<UNK>" -ppl $dev_text
+#file exp/data/lm_dev_text: 2100 sentences, 21134 words, 0 OOVs
+#0 zeroprobs, logprob= -33550.65 ppl= 27.79922 ppl1= 38.68301
