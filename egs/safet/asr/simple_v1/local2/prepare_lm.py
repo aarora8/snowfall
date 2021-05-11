@@ -8,8 +8,6 @@ from snowfall.common import setup_logger
 import re
 
 WORDLIST = dict()
-IV_WORDS = dict()
-OOV_WORDS = dict()
 UNK = '<UNK>'
 REPLACE_UNKS = True
 
@@ -22,6 +20,8 @@ def read_lexicon_words(lexicon):
 
 
 def case_normalize(w):
+    # this is for POI
+    # but we should add it into the lexicon
     if w.startswith('~'):
         return w.upper()
     else:
@@ -42,60 +42,30 @@ def process_transcript(transcript):
     # remove " -- "
     # remove " --" --> strings that ends with "-" and starts with " "
     # \s+ markers are – that means “any white space character, one or more times”
-    tmp = re.sub(r'<extreme background>', '<extreme_background>', transcript)
+    tmp = re.sub(r'<extreme background>', '', transcript)
+    tmp = re.sub(r'<background>', '', transcript)
     tmp = re.sub(r'foreign\s+lang=', 'foreign_lang=', tmp)
-    tmp = re.sub(r'\)\)([^\s])', ')) \1', tmp)
+    tmp = re.sub(r'\(\(', '', tmp)
+    tmp = re.sub(r'\)\)', '', tmp)
     tmp = re.sub(r'[.,!?]', ' ', tmp)
     tmp = re.sub(r' -- ', ' ', tmp)
     tmp = re.sub(r' --$', '', tmp)
     x = re.split(r'\s+', tmp)
-    old_x = x
-    x = list()
-
-    w = old_x.pop(0)
-    while old_x:
-        if w.startswith(r'(('):
-            while old_x and not w.endswith('))'):
-                w2 = old_x.pop(0)
-                w += ' ' + w2
-            x.append(w)
-            if old_x:
-                w = old_x.pop(0)
-        elif w.startswith(r'<'):
-            #this is very simplified and assumes we will not get a starting tag
-            #alone
-            while old_x and not w.endswith('>'):
-                w2 = old_x.pop(0)
-                w += ' ' + w2
-            x.append(w)
-            if old_x:
-                w = old_x.pop(0)
-        elif w.endswith(r'))'):
-            if old_x:
-                w = old_x.pop(0)
-        else:
-            x.append(w)
-            if old_x:
-                w = old_x.pop(0)
-
-    if not x:
-        return None
-    if len(x) == 1 and x[0] in ('<background>', '<extreme_background>'):
-        return None
 
     out_x = list()
     for w in x:
+        w = w.strip()
         w = case_normalize(w)
-        if w in WORDLIST:
-            IV_WORDS[w] = 1 + IV_WORDS.get(w, 0)
+        if w == "":
+            continue
+        elif w in WORDLIST:
             out_x.append(w)
         else:
-            OOV_WORDS[w] = 1 + OOV_WORDS.get(w, 0)
-            if REPLACE_UNKS:
-                out_x.append(UNK)
-            else:
-                out_x.append(w)
+            out_x.append(UNK)
 
+    #print(transcript)
+    #print(x)
+    #print(out_x)
     return ' '.join(out_x)
 
 
@@ -106,24 +76,22 @@ def main():
     lexicon =  '/export/c03/aarora8/kaldi2/egs/OpenSAT2020/s5/data/local/lexicon.txt'
     read_lexicon_words(lexicon)
     sups = load_manifest('exp/data/supervisions_train.json')
-    #f = open('exp/data/lm_train_text', 'w')
+    f = open('exp/data/lm_train_text', 'w')
     for s in sups:
-        if "a big explosion and" in s.text:
+        cleaned_transcrition = process_transcript(s.text)
+        if cleaned_transcrition is not None:
+            print(cleaned_transcrition, file=f)
+        else:
             print(s.text)
-            cleaned_transcrition = process_transcript(s.text)
-            if cleaned_transcrition is not None:
-                print(cleaned_transcrition)
-    
-#    sups = load_manifest('exp/data/supervisions_dev_clean.json')
-#    f = open('exp/data/lm_dev_text', 'w')
-#    for s in sups:
-#        #print(s.text, file=f)
-#        cleaned_transcrition = process_transcript(s.text)
-#        if cleaned_transcrition:
-#            cleaned_transcrition = cleaned_transcrition + ' '
-#        if cleaned_transcrition is not None:
-#            print(cleaned_transcrition, file=f)
-#
+
+    sups = load_manifest('exp/data/supervisions_dev_clean.json')
+    f = open('exp/data/lm_dev_text', 'w')
+    for s in sups:
+        cleaned_transcrition = process_transcript(s.text)
+        if cleaned_transcrition is not None:
+            print(cleaned_transcrition, file=f)
+        else:
+            print(s.text)
 
 if __name__ == '__main__':
     main()
