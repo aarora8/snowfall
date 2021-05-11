@@ -14,11 +14,6 @@ UNK = '<UNK>'
 REPLACE_UNKS = True
 
 setup_logger('exp/log/prepare_lm')
-if Path(f'data/lang_nosp/G.fst.txt').is_file():
-    logging.info(f'G.fst.txt already exists.')
-logging.info(f'Processing language')
-
-
 def read_lexicon_words(lexicon):
     with open(lexicon, 'r', encoding='utf-8') as f:
         for line in f:
@@ -28,9 +23,9 @@ def read_lexicon_words(lexicon):
 
 def case_normalize(w):
     if w.startswith('~'):
-        return w.upper()
+        return w.lower()
     else:
-        return w.upper()
+        return w.lower()
 
 
 def process_transcript(transcript):
@@ -96,16 +91,20 @@ def main():
     # Read Lhotse supervisions, filter out silence regions, remove special non-lexical tokens,
     # and write the sentences to a text file for LM training.
     logging.info(f'Preparing LM training text.')
-    lexicon =  'data/local/dict_nosp/lexicon/lexicon_raw_nosil.txt'
+    lexicon =  '/export/c03/aarora8/kaldi2/egs/OpenSAT2020/s5/data/local/lexicon.txt'
     read_lexicon_words(lexicon)
-    sups = load_manifest('exp/data/supervisions_train.json').filter(lambda s: s.text != '<silence>')
+    sups = load_manifest('exp/data/supervisions_train.json')
     f = open('exp/data/lm_train_text', 'w')
     for s in sups:
-        print(s.text, file=f)
+        #print(s.text, file=f)
+        cleaned_transcrition = process_transcript(s.text)
+        if cleaned_transcrition is not None:
+            print(cleaned_transcrition, file=f)
     
-    sups = load_manifest('exp/data/supervisions_dev.json').filter(lambda s: s.text != '<silence>')
+    sups = load_manifest('exp/data/supervisions_dev_clean.json')
     f = open('exp/data/lm_dev_text', 'w')
     for s in sups:
+        #print(s.text, file=f)
         cleaned_transcrition = process_transcript(s.text)
         if cleaned_transcrition is not None:
             print(cleaned_transcrition, file=f)

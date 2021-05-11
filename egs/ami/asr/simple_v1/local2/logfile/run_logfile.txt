@@ -1,4 +1,0 @@
-Preparing phone lists
-Lexicon text file saved as: data/local/dict_nosp/lexicon.txt
-local/prepare_lang.sh --position-dependent-phones false data/local/dict_nosp <UNK> data/local/lang_tmp_nosp data/lang_nosp
-**Creating data/local/dict_nosp/lexiconp.txt from data/local/dict_nosp/lexicon.txt
