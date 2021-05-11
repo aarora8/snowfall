@@ -23,14 +23,26 @@ def read_lexicon_words(lexicon):
 
 def case_normalize(w):
     if w.startswith('~'):
-        return w.lower()
+        return w.upper()
     else:
         return w.lower()
 
 
 def process_transcript(transcript):
     global WORDLIST
-    tmp = re.sub(r'extreme\s+background', 'extreme_background', transcript)
+    # https://www.programiz.com/python-programming/regex
+    # [] for set of characters you with to match
+    # eg. [abc] --> will search for a or b or c
+    # "." matches any single character
+    # "$" to check if string ends with a certain character 
+    # eg. "a$" should end with "a"
+    # replace <extreme background> with <extreme_background>
+    # replace <foreign lang="Spanish">fuego</foreign> with foreign_lang=
+    # remove "[.,!?]"
+    # remove " -- "
+    # remove " --" --> strings that ends with "-" and starts with " "
+    # \s+ markers are – that means “any white space character, one or more times”
+    tmp = re.sub(r'<extreme background>', '<extreme_background>', transcript)
     tmp = re.sub(r'foreign\s+lang=', 'foreign_lang=', tmp)
     tmp = re.sub(r'\)\)([^\s])', ')) \1', tmp)
     tmp = re.sub(r'[.,!?]', ' ', tmp)
@@ -88,27 +100,30 @@ def process_transcript(transcript):
 
 
 def main():
-    # Read Lhotse supervisions, filter out silence regions, remove special non-lexical tokens,
+    # Read Lhotse supervisions, remove special non-lexical tokens,
     # and write the sentences to a text file for LM training.
     logging.info(f'Preparing LM training text.')
     lexicon =  '/export/c03/aarora8/kaldi2/egs/OpenSAT2020/s5/data/local/lexicon.txt'
     read_lexicon_words(lexicon)
     sups = load_manifest('exp/data/supervisions_train.json')
-    f = open('exp/data/lm_train_text', 'w')
+    #f = open('exp/data/lm_train_text', 'w')
     for s in sups:
-        #print(s.text, file=f)
-        cleaned_transcrition = process_transcript(s.text)
-        if cleaned_transcrition is not None:
-            print(cleaned_transcrition, file=f)
+        if "a big explosion and" in s.text:
+            print(s.text)
+            cleaned_transcrition = process_transcript(s.text)
+            if cleaned_transcrition is not None:
+                print(cleaned_transcrition)
     
-    sups = load_manifest('exp/data/supervisions_dev_clean.json')
-    f = open('exp/data/lm_dev_text', 'w')
-    for s in sups:
-        #print(s.text, file=f)
-        cleaned_transcrition = process_transcript(s.text)
-        if cleaned_transcrition is not None:
-            print(cleaned_transcrition, file=f)
-
+#    sups = load_manifest('exp/data/supervisions_dev_clean.json')
+#    f = open('exp/data/lm_dev_text', 'w')
+#    for s in sups:
+#        #print(s.text, file=f)
+#        cleaned_transcrition = process_transcript(s.text)
+#        if cleaned_transcrition:
+#            cleaned_transcrition = cleaned_transcrition + ' '
+#        if cleaned_transcrition is not None:
+#            print(cleaned_transcrition, file=f)
+#
 
 if __name__ == '__main__':
     main()
