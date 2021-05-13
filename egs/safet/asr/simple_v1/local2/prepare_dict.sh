@@ -20,12 +20,13 @@ mkdir -p $dst_dir/lexicon
 curl http://svn.code.sf.net/p/cmusphinx/code/trunk/cmudict/cmudict-0.7b > $dst_dir/lexicon/cmudict-0.7b
 uconv -f iso-8859-1 -t utf-8 $dst_dir/lexicon/cmudict-0.7b| grep -v ';;' | sed 's/([0-9])//g' | sed 1,70d  > $lexicon_raw_nosil
 
-# To do: add these in the dict
-#%uh <hes>
-#%um <hes>
-#%er <hes>
-#%ah <hes>
-#%eh <hes>
+# are mapped to unk which is mapped to SPN so should be ok
+#%uh SPN
+#%um SPN
+#%er SPN
+#%ah SPN
+#%eh SPN
+
 # dev data have the followings:
 #{breath} <noise>
 #{lipsmack} <noise>
