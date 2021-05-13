@@ -63,9 +63,6 @@ def process_transcript(transcript):
         else:
             out_x.append(UNK)
 
-    #print(transcript)
-    #print(x)
-    #print(out_x)
     return ' '.join(out_x)
 
 
@@ -73,25 +70,17 @@ def main():
     # Read Lhotse supervisions, remove special non-lexical tokens,
     # and write the sentences to a text file for LM training.
     logging.info(f'Preparing LM training text.')
-    lexicon =  '/export/c03/aarora8/kaldi2/egs/OpenSAT2020/s5/data/local/lexicon.txt'
+    lexicon =  'data/local/dict_nosp/lexicon/lexicon_raw_nosil.txt'
     read_lexicon_words(lexicon)
     sups = load_manifest('exp/data/supervisions_train.json')
     f = open('exp/data/lm_train_text', 'w')
     for s in sups:
-        cleaned_transcrition = process_transcript(s.text)
-        if cleaned_transcrition is not None:
-            print(cleaned_transcrition, file=f)
-        else:
-            print(s.text)
+        print(s.text, file=f)
 
     sups = load_manifest('exp/data/supervisions_dev_clean.json')
     f = open('exp/data/lm_dev_text', 'w')
     for s in sups:
-        cleaned_transcrition = process_transcript(s.text)
-        if cleaned_transcrition is not None:
-            print(cleaned_transcrition, file=f)
-        else:
-            print(s.text)
+        print(s.text, file=f)
 
 if __name__ == '__main__':
     main()
