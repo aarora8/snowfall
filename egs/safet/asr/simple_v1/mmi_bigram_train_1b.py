@@ -269,7 +269,7 @@ def main():
     setup_dist(rank=args.local_rank, world_size=args.world_size)
     fix_random_seed(42)
 
-    start_epoch = 0
+    start_epoch = 6
     num_epochs = 10
     use_adam = True
 
@@ -304,7 +304,7 @@ def main():
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
             cuts_train,
-            max_frames=20000,
+            max_frames=10000,
             shuffle=True,
             num_buckets=30
         )
@@ -312,7 +312,7 @@ def main():
         logging.info('Using regular sampler with cut concatenation.')
         train_sampler = SingleCutSampler(
             cuts_train,
-            max_frames=20000,
+            max_frames=10000,
             shuffle=True,
         )
     logging.info("About to create train dataloader")
