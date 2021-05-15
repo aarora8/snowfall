@@ -1,7 +1,9 @@
 #!/bin/bash
 
 #$ -cwd
-#$ -q gpu.q -l gpu=1
+#$ -q gpu.q -l gpu=2
+#$ -l mem_free=32G
+#$ -l num_proc=2
 #$ -l h_rt=8:00:00
 #$ -j y#
 
