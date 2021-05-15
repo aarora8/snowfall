@@ -9,7 +9,7 @@ set -eou pipefail
 [ -f path.sh ] && . ./path.sh
 . ./cmd.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
-stage=3
+stage=0
 if [ $stage -le 0 ]; then
   local2/prepare_dict.sh
 fi
@@ -30,9 +30,9 @@ fi
 
 if [ $stage -le 3 ]; then
   echo "LM preparation"
-  #local2/prepare_lm.py
-  #local2/train_lm_srilm.sh
-  #gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
+  local2/prepare_lm.py
+  local2/train_lm_srilm.sh
+  gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
 
   # Build G
   python3 -m kaldilm \
@@ -43,7 +43,7 @@ if [ $stage -le 3 ]; then
 fi
 
 if [ $stage -le 4 ]; then
-  #ngpus=1
+  ngpus=1
   python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
   #CUDA_VISIBLE_DEVICES=$(free-gpu) /home/aaror/miniconda3/envs/k2/bin/python3 ./mmi_bigram_train_1b.py
 fi

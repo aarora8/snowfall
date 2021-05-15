@@ -21,4 +21,5 @@ module load cuda10.0/toolkit
 env | grep CUDA_VISIBLE_DEVICES
 nvidia-smi
 
-/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
+#/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
+bash run.sh
