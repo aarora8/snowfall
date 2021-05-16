@@ -32,4 +32,5 @@ echo "$0: Running the job on GPU(s) $CUDA_VISIBLE_DEVICES"
 #/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
 #bash run.sh
 
-echo '#' ended at `date`
+echo "$0: ended at `date`"
+# -l hostname='!r3n03&!r3n06&!r3n01&!r8n02&!r3n04&!r8n05&!r5n02'
