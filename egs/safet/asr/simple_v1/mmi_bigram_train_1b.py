@@ -269,7 +269,7 @@ def main():
     setup_dist(rank=args.local_rank, world_size=args.world_size)
     fix_random_seed(42)
 
-    start_epoch = 6
+    start_epoch = 0
     num_epochs = 10
     use_adam = True
 
@@ -298,7 +298,7 @@ def main():
     cuts_train = CutSet.from_json(feature_dir /
                                   'cuts_safet_train.json.gz')
     logging.info("About to get dev cuts")
-    cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev.json.gz')
+    cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev_clean.json.gz')
     train = K2SpeechRecognitionDataset(cuts_train)
     if args.bucketing_sampler:
         logging.info('Using BucketingSampler.')
