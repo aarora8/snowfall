@@ -19,14 +19,17 @@ source ~/.bashrc
 export PATH="/home/hltcoe/aarora/miniconda3/bin:$PATH"
 conda activate k2
 
-hostname
 env| grep SGE_HGR_gpu
 module load cuda10.0/toolkit
 env | grep CUDA_VISIBLE_DEVICES
 nvidia-smi
 
+echo "$0: Running on `hostname`"
+echo "$0: Started at `date`"
 echo "$0: Running the job on GPU(s) $CUDA_VISIBLE_DEVICES"
 "$@"
 
 #/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
 #bash run.sh
+
+echo '#' ended at `date`
