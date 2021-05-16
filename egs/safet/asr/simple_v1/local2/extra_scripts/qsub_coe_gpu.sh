@@ -9,7 +9,6 @@
 #$ -m bea
 #$ -l mem_free=16G
 #$ -l h_rt=24:00:00
-#$ -o decode.log
 
 # big data config
 # qsub -l gpu=4 -q gpu.q@@v100 -l h_rt=72:00:00
