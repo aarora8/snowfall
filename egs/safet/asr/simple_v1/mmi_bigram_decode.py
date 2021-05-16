@@ -88,7 +88,6 @@ def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
 def print_transition_probabilities(P: k2.Fsa, phone_symbol_table: SymbolTable,
                                    phone_ids: List[int], filename: str):
     '''Print the transition probabilities of a phone LM.
-
     Args:
       P:
         A bigram phone LM.
