@@ -71,7 +71,7 @@ def get_parser():
     parser.add_argument(
         '--full-libri',
         type=str2bool,
-        default=False,
+        default=True,
         help='When enabled, use 960h LibriSpeech.')
     return parser
 
