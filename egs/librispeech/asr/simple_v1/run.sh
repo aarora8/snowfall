@@ -2,13 +2,11 @@
 
 # Copyright 2020 Xiaomi Corporation (Author: Junbo Zhang)
 # Apache 2.0
-
 # Example of how to build L and G FST for K2. Most scripts of this example are copied from Kaldi.
 
 set -eou pipefail
 
-stage=0
-
+stage=5
 if [ $stage -le 1 ]; then
   local/download_lm.sh "openslr.org/resources/11" data/local/lm
 fi
@@ -58,22 +56,17 @@ if [ $stage -le 4 ]; then
 fi
 
 if [ $stage -le 5 ]; then
-  python3 ./prepare.py
+  #python3 ./prepare.py
+  utils/queue.pl --mem 30G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 6 ]; then
-  # python3 ./train.py # ctc training
-  # python3 ./mmi_bigram_train.py # ctc training + bigram phone LM
-  #  python3 ./mmi_mbr_train.py
-
-  # Single node, multi-GPU training
-  # Adapting to a multi-node scenario should be straightforward.
-  ngpus=2
-  python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train.py --world_size $ngpus
+  #ngpus=1
+  #python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train.py --world_size $ngpus
+  utils/queue.pl --mem 20G --gpu 1 --config conf/coe.conf exp/train.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train.py
 fi
 
 if [ $stage -le 7 ]; then
-  # python3 ./decode.py # ctc decoding
-  python3 ./mmi_bigram_decode.py --epoch 9
-  #  python3 ./mmi_mbr_decode.py
+  # python3 ./mmi_bigram_decode.py --epoch 9
+  utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf exp/decode.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py --epoch 9
 fi
