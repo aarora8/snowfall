@@ -67,27 +67,43 @@ def locate_corpus(*corpus_dirs):
     sys.exit(1)
 
 
+def get_parser():
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument(
+        '--num-jobs',
+        type=int,
+        default=min(15, os.cpu_count()),
+        help='When enabled, use 960h LibriSpeech.')
+    parser.add_argument(
+        '--full-libri',
+        type=str2bool,
+        default=False,
+        help='When enabled, use 960h LibriSpeech.')
+    return parser
+
+
 def main():
+    args = get_parser().parse_args()
     output_dir = Path('exp/data')
     print('ami manifest preparation:')
     #download_ami('/export/corpora5/amicorpus/','/export/c03/aarora8/snowfall/egs/ami/asr/simple_v1/exp/data/')
     #ami_manifests = prepare_ami('/export/corpora5/amicorpus/', 'archive/', output_dir, 'ihm', 'full-corpus-asr', 0.5)
     ami_manifests = defaultdict(dict)
-    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/dev', 16000)
+    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/dev', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     ami_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
             }
 
-    recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/eval', 16000)
+    recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/eval', 16000)
     validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
     ami_manifests['eval'] = {
                 'recordings': recording_set_eval,
                 'supervisions': supervision_set_eval
             }
 
-    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/train', 16000)
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/train', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     ami_manifests['train'] = {
                 'recordings': recording_set_train,
@@ -108,7 +124,7 @@ def main():
             )
             print(f"store cutset supervision")
             cut_set = cut_set.trim_to_supervisions()
-            cut_set.to_json(f'{output_dir}/cuts_ami_tts_{partition}.json')
+            #cut_set.to_json(f'{output_dir}/cuts_ami_tts_{partition}.json')
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
                 storage_path=f'{output_dir}/feats_ami_{partition}',
