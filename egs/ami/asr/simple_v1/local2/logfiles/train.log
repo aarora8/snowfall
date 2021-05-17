@@ -21,3 +21,60 @@ Traceback (most recent call last):
 AssertionError: Supervisions ending after the cut are not supported for ASR (sup id: AMI_IB4004_H03_MIO039_0036179_0036400, cut id: 1a2fc5e3-13c6-4761-b115-34c5e4d87da9)
 # Accounting: time=25 threads=1
 # Finished at Mon May 17 12:51:19 EDT 2021 with status 1
+
+
+  {
+    "id": "1a2fc5e3-13c6-4761-b115-34c5e4d87da9",
+    "start": 361.79,
+    "duration": 0.49,
+    "channel": 0,
+    "supervisions": [
+      {
+        "id": "AMI_IB4004_H03_MIO039_0036179_0036400",
+        "recording_id": "AMI_IB4004_H03",
+        "start": 0.0,
+        "duration": 2.2099999999999795,
+        "channel": 0,
+        "text": "YEAH THAT'S THAT'S A POSSIBLE",
+        "speaker": "AMI_IB4004_H03_MIO039-01"
+      },
+      {
+        "id": "AMI_IB4004_H03_MIO039_0036179_0036228",
+        "recording_id": "AMI_IB4004_H03",
+        "start": 0.0,
+        "duration": 0.48999999999995225,
+        "channel": 0,
+        "text": "UH",
+        "speaker": "AMI_IB4004_H03_MIO039-01"
+      }
+    ],
+    "features": {
+      "type": "fbank",
+      "num_frames": 49,
+      "num_features": 80,
+      "frame_shift": 0.01,
+      "sampling_rate": 16000,
+      "start": 361.79,
+      "duration": 0.49,
+      "storage_type": "lilcom_hdf5",
+      "storage_path": "exp/data/feats_ami_dev/feats-3.h5",
+      "storage_key": "8fb1d662-9a12-4100-a488-8c7e7445edd3",
+      "channels": 0
+    },
+    "recording": {
+      "id": "AMI_IB4004_H03",
+      "sources": [
+        {
+          "type": "command",
+          "channels": [
+            0
+          ],
+          "source": "sox -c 1 -t wavpcm -e signed-integer /export/common/data/corpora/amicorpus/IB4004/audio/IB4004.Headset-3.wav -t wavpcm - "
+        }
+      ],
+      "sampling_rate": 16000,
+      "num_samples": 38285312,
+      "duration": 2392.832
+    },
+    "type": "Cut"
+  }
