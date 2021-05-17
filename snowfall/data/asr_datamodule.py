@@ -1,10 +1,7 @@
-from pathlib import Path
-
 import argparse
-
-from typing import List, Union
-
 import logging
+from pathlib import Path
+from typing import List, Union
 
 from torch.utils.data import DataLoader
 
@@ -158,6 +155,7 @@ class AsrDataModule(DataModule):
             sampler=train_sampler,
             batch_size=None,
             num_workers=4,
+            persistent_workers=True,
         )
         return train_dl
 
@@ -165,25 +163,37 @@ class AsrDataModule(DataModule):
         logging.info("About to get dev cuts")
         cuts_valid = self.valid_cuts()
 
+        transforms = [ ]
+        if self.args.concatenate_cuts:
+            transforms = [ CutConcatenate(
+                                 duration_factor=self.args.duration_factor,
+                                 gap=self.args.gap)
+                          ] + transforms
+
+
         logging.info("About to create dev dataset")
         if self.args.on_the_fly_feats:
             cuts_valid = cuts_valid.drop_features()
             validate = K2SpeechRecognitionDataset(
                 cuts_valid.drop_features(),
+                cut_transforms=transforms,
                 input_strategy=OnTheFlyFeatures(Fbank(FbankConfig(num_mel_bins=80)))
             )
         else:
-            validate = K2SpeechRecognitionDataset(cuts_valid)
+            validate = K2SpeechRecognitionDataset(cuts_valid,
+                                                  cut_transforms=transforms)
         valid_sampler = SingleCutSampler(
             cuts_valid,
             max_duration=self.args.max_duration,
+            shuffle=True,
         )
         logging.info("About to create dev dataloader")
         valid_dl = DataLoader(
             validate,
             sampler=valid_sampler,
             batch_size=None,
-            num_workers=1
+            num_workers=2,
+            persistent_workers=True,
         )
         return valid_dl
 
