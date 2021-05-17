@@ -116,14 +116,14 @@ def main():
                 cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
 
             print(f"store cutset supervision")
-#            cut_set = cut_set.compute_and_store_features(
-#                extractor=extractor,
-#                storage_path=f'{output_dir}/feats_ami_{partition}',
-#                # when an executor is specified, make more partitions
-#                num_jobs=args.num_jobs if ex is None else 80,
-#                executor=ex,
-#                storage_type=LilcomHdf5Writer
-#            )
+            cut_set = cut_set.compute_and_store_features(
+                extractor=extractor,
+                storage_path=f'{output_dir}/feats_ami_{partition}',
+                # when an executor is specified, make more partitions
+                num_jobs=args.num_jobs if ex is None else 80,
+                executor=ex,
+                storage_type=LilcomHdf5Writer
+            )
             ami_manifests[partition]['cuts'] = cut_set
             cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
 
