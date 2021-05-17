@@ -28,7 +28,7 @@ if [ $stage -le 2 ]; then
   utils/queue.pl --mem 30G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
   #$cmd exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
-
+exit
 if [ $stage -le 3 ]; then
   echo "LM preparation"
   local2/prepare_lm.py

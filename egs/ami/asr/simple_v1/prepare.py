@@ -8,10 +8,16 @@ import subprocess
 import sys
 from contextlib import contextmanager
 from pathlib import Path
+from collections import defaultdict
 
 import torch
+import lhotse
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
 from lhotse.recipes import prepare_ami
+from lhotse import validate_recordings_and_supervisions
+from lhotse.audio import Recording, RecordingSet
+from lhotse.supervision import SupervisionSegment, SupervisionSet
+from lhotse.utils import Pathlike, check_and_rglob, recursion_limit
 
 from snowfall.common import str2bool
 
@@ -66,13 +72,22 @@ def main():
     print('ami manifest preparation:')
     #download_ami('/export/corpora5/amicorpus/','/export/c03/aarora8/snowfall/egs/ami/asr/simple_v1/exp/data/')
     #ami_manifests = prepare_ami('/export/corpora5/amicorpus/', 'archive/', output_dir, 'ihm', 'full-corpus-asr', 0.5)
+    ami_manifests = defaultdict(dict)
     recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/dev', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     ami_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
             }
-    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/dev', 16000)
+
+    recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/eval', 16000)
+    validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
+    ami_manifests['eval'] = {
+                'recordings': recording_set_eval,
+                'supervisions': supervision_set_eval
+            }
+
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/ami/s5b/data/ihm/train', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     ami_manifests['train'] = {
                 'recordings': recording_set_train,
