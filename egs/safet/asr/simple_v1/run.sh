@@ -9,8 +9,7 @@ set -eou pipefail
 . ./path.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
 # utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf decode.log /home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
-stage=4
-
+stage=0
 if [ $stage -le 0 ]; then
   local2/prepare_dict.sh
 fi

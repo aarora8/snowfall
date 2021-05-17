@@ -6,9 +6,9 @@
 # Example of how to build L and G FST for K2. Most scripts of this example are copied from Kaldi.
 
 set -eou pipefail
-[ -f path.sh ] && . ./path.sh
-. ./cmd.sh
+. ./path.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
+# utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf decode.log /home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
 stage=0
 if [ $stage -le 0 ]; then
   local2/prepare_dict.sh
@@ -24,10 +24,10 @@ if [ $stage -le 1 ]; then
 fi
 
 if [ $stage -le 2 ]; then
-  python3 ./prepare.py
-  #utils/queue.pl --mem 30G train.log /home/aaror/miniconda3/envs/k2/bin/python3 prepare.py
+  #python3 ./prepare.py
+  utils/queue.pl --mem 30G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
-exit
+
 if [ $stage -le 3 ]; then
   echo "LM preparation"
   local2/prepare_lm.py
@@ -44,9 +44,11 @@ fi
 
 if [ $stage -le 4 ]; then
   ngpus=1
-  python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
+  #python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
+  utils/queue.pl --mem 20G --gpu 1 --config conf/coe.conf exp/train.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train_1b.py
 fi
 
 if [ $stage -le 5 ]; then
-  python3 ./mmi_bigram_decode.py --epoch 9
+  #python3 ./mmi_bigram_decode.py --epoch 9
+  utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf exp/decode.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py --epoch 9
 fi
