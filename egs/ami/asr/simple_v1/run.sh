@@ -50,6 +50,6 @@ if [ $stage -le 4 ]; then
 fi
 
 if [ $stage -le 5 ]; then
-  #python3 ./mmi_bigram_decode.py --epoch 9
+  #pyteon3 ./mmi_bigram_decode.py --epoch 9
   utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf exp/decode.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py --epoch 9
 fi

@@ -12,6 +12,7 @@ from collections import defaultdict
 
 import torch
 import lhotse
+from lhotse.utils import fastcopy
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
 from lhotse.recipes import prepare_ami
 from lhotse import validate_recordings_and_supervisions
@@ -58,26 +59,12 @@ def get_executor():
     yield None
 
 
-def locate_corpus(*corpus_dirs):
-    for d in corpus_dirs:
-        if os.path.exists(d):
-            return d
-    print("Please create a place on your system to put the downloaded Librispeech data "
-          "and add it to `corpus_dirs`")
-    sys.exit(1)
-
-
 def get_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         '--num-jobs',
         type=int,
         default=min(15, os.cpu_count()),
-        help='When enabled, use 960h LibriSpeech.')
-    parser.add_argument(
-        '--full-libri',
-        type=str2bool,
-        default=False,
         help='When enabled, use 960h LibriSpeech.')
     return parser
 
@@ -86,8 +73,6 @@ def main():
     args = get_parser().parse_args()
     output_dir = Path('exp/data')
     print('ami manifest preparation:')
-    #download_ami('/export/corpora5/amicorpus/','/export/c03/aarora8/snowfall/egs/ami/asr/simple_v1/exp/data/')
-    #ami_manifests = prepare_ami('/export/corpora5/amicorpus/', 'archive/', output_dir, 'ihm', 'full-corpus-asr', 0.5)
     ami_manifests = defaultdict(dict)
     recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/dev', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
@@ -125,16 +110,20 @@ def main():
                 recordings=manifests['recordings'],
                 supervisions=manifests['supervisions']
             )
-            print(f"store cutset supervision")
             cut_set = cut_set.trim_to_supervisions()
-            cut_set = cut_set.compute_and_store_features(
-                extractor=extractor,
-                storage_path=f'{output_dir}/feats_ami_{partition}',
-                # when an executor is specified, make more partitions
-                num_jobs=args.num_jobs if ex is None else 80,
-                executor=ex,
-                storage_type=LilcomHdf5Writer
-            )
+            cut_set = cut_set.map(lambda c: fastcopy(c, supervisions=[s for s in c.supervisions if s.start == 0 and abs(s.duration - c.duration) <= 1e-3]))
+            if 'train' in partition:
+                cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
+
+            print(f"store cutset supervision")
+#            cut_set = cut_set.compute_and_store_features(
+#                extractor=extractor,
+#                storage_path=f'{output_dir}/feats_ami_{partition}',
+#                # when an executor is specified, make more partitions
+#                num_jobs=args.num_jobs if ex is None else 80,
+#                executor=ex,
+#                storage_type=LilcomHdf5Writer
+#            )
             ami_manifests[partition]['cuts'] = cut_set
             cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
 
