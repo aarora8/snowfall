@@ -65,7 +65,20 @@ def main():
     output_dir = Path('exp/data')
     print('ami manifest preparation:')
     #download_ami('/export/corpora5/amicorpus/','/export/c03/aarora8/snowfall/egs/ami/asr/simple_v1/exp/data/')
-    ami_manifests = prepare_ami('/export/corpora5/amicorpus/', 'archive/', output_dir, 'ihm', 'full-corpus-asr', 0.5)
+    #ami_manifests = prepare_ami('/export/corpora5/amicorpus/', 'archive/', output_dir, 'ihm', 'full-corpus-asr', 0.5)
+    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/export/c03/aarora8/kaldi2/egs/ami/s5b/data/ihm/dev', 16000)
+    validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
+    ami_manifests['dev'] = {
+                'recordings': recording_set_dev,
+                'supervisions': supervision_set_dev
+            }
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/export/c03/aarora8/kaldi2/egs/ami/s5b/data/ihm/dev', 16000)
+    validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
+    ami_manifests['train'] = {
+                'recordings': recording_set_train,
+                'supervisions': supervision_set_train
+            }
+
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
