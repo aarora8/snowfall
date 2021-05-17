@@ -1,0 +1,23 @@
+# Running on r7n03
+# Started at Mon May 17 12:50:54 EDT 2021
+# /home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_train_1b.py 
+World size: 1 Rank: 0
+Added key: store_based_barrier_key:1 to store for rank: 0
+Loading L.fst
+About to get train cuts
+About to get dev cuts
+Using BucketingSampler.
+About to create train dataloader
+About to create dev dataset
+Traceback (most recent call last):
+  File "mmi_bigram_train_1b.py", line 493, in <module>
+    main()
+  File "mmi_bigram_train_1b.py", line 326, in main
+    validate = K2SpeechRecognitionDataset(cuts_dev)
+  File "/home/hltcoe/aarora/lhotse/lhotse/dataset/speech_recognition.py", line 94, in __init__
+    validate_for_asr(self.cuts)
+  File "/home/hltcoe/aarora/lhotse/lhotse/dataset/speech_recognition.py", line 156, in validate_for_asr
+    assert supervision.duration <= cut.duration + tol, f"Supervisions ending after the cut " \
+AssertionError: Supervisions ending after the cut are not supported for ASR (sup id: AMI_IB4004_H03_MIO039_0036179_0036400, cut id: 1a2fc5e3-13c6-4761-b115-34c5e4d87da9)
+# Accounting: time=25 threads=1
+# Finished at Mon May 17 12:51:19 EDT 2021 with status 1
