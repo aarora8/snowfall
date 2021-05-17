@@ -7,6 +7,7 @@
 
 set -eou pipefail
 . ./path.sh
+. ./cmd.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
 # utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf decode.log /home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
 stage=0
@@ -24,8 +25,7 @@ if [ $stage -le 1 ]; then
 fi
 
 if [ $stage -le 2 ]; then
-  #python3 ./prepare.py
-  utils/queue.pl --mem 30G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
+  $cmd exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 3 ]; then
