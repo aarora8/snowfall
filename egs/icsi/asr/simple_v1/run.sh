@@ -29,7 +29,7 @@ if [ $stage -le 2 ]; then
   utils/queue.pl --mem 30G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
   #$cmd exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
-exit
+
 if [ $stage -le 3 ]; then
   echo "LM preparation"
   local2/prepare_lm.py
@@ -43,7 +43,7 @@ if [ $stage -le 3 ]; then
     --max-order=3 \
     data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
 fi
-
+exit
 if [ $stage -le 4 ]; then
   ngpus=1
   #python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus

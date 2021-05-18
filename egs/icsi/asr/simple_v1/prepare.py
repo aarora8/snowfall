@@ -90,13 +90,13 @@ def main():
                 'supervisions': supervision_set_eval
             }
 
-    #recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/icsi/s5/data/ihm/train_cleaned_fixed2', 16000)
-    #validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    #supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
-    #ami_manifests['train'] = {
-    #            'recordings': recording_set_train,
-    #            'supervisions': supervision_set_train
-    #        }
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/icsi/s5/data/ihm/train_cleaned_fixed2', 16000)
+    validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
+    supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
+    ami_manifests['train'] = {
+                'recordings': recording_set_train,
+                'supervisions': supervision_set_train
+            }
 
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
