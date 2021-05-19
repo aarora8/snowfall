@@ -5,9 +5,9 @@ silence_phones=$dst_dir/silence_phones.txt
 optional_silence=$dst_dir/optional_silence.txt
 nonsil_phones=$dst_dir/nonsilence_phones.txt
 lexicon_raw_nosil=$dst_dir/lexicon/librispeech-lexicon.txt
-mkdir -p $dst_dir/lexicon
 
-wget https://www.openslr.org/resources/11/librispeech-lexicon.txt $dst_dir/lexicon/
+mkdir -p $dst_dir/lexicon
+wget -P $dst_dir/lexicon/ https://www.openslr.org/resources/11/librispeech-lexicon.txt
 
 echo "Preparing phone lists"
 (echo SIL; echo SPN;) > $silence_phones
