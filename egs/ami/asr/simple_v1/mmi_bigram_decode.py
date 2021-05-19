@@ -263,7 +263,7 @@ def main():
     # load dataset
     feature_dir = Path('exp/data')
     logging.debug("About to get test cuts")
-    for partition in ['dev', 'test']:
+    for partition in ['dev', 'eval']:
         cuts_test = CutSet.from_json(feature_dir / f'cuts_ami_{partition}.json.gz')
         logging.info(f"About to create {partition} dataset")
         test = K2SpeechRecognitionDataset(cuts_test)

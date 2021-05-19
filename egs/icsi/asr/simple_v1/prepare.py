@@ -103,7 +103,7 @@ def main():
     with get_executor() as ex:  # Initialize the executor only once.
         for partition, manifests in ami_manifests.items():
             print(f"Processing {partition} ")
-            if (output_dir / f'cuts_ami_{partition}.json.gz').is_file():
+            if (output_dir / f'cuts_icsi_{partition}.json.gz').is_file():
                 print(f'{partition} already exists - skipping.')
                 continue
             cut_set = CutSet.from_manifests(
@@ -118,14 +118,14 @@ def main():
             print(f"store cutset supervision")
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
-                storage_path=f'{output_dir}/feats_ami_{partition}',
+                storage_path=f'{output_dir}/feats_icsi_{partition}',
                 # when an executor is specified, make more partitions
                 num_jobs=args.num_jobs if ex is None else 80,
                 executor=ex,
                 storage_type=LilcomHdf5Writer
             )
             ami_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
+            cut_set.to_json(output_dir / f'cuts_icsi_{partition}.json.gz')
 
 
 if __name__ == '__main__':
