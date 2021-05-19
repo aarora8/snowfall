@@ -3,11 +3,11 @@
 #$ -q gpu.q -l gpu=1
 #$ -wd /home/hltcoe/aarora/snowfall/egs/safet/asr/simple_v1/
 #$ -V
-#$ -N decode_job
+#$ -N train_job
 #$ -j y -o $JOB_NAME-$JOB_ID.out
 #$ -M ashish.arora.88888@gmail.com
 #$ -m bea
-#$ -l mem_free=16G
+#$ -l mem_free=32G
 #$ -l h_rt=24:00:00
 
 # big data config
@@ -28,7 +28,7 @@ echo "$0: Started at `date`"
 echo "$0: Running the job on GPU(s) $CUDA_VISIBLE_DEVICES"
 "$@"
 
-#/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
+/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_att_transformer_train.py
 #bash run.sh
 
 echo "$0: ended at `date`"
