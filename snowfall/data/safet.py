@@ -22,6 +22,6 @@ class SafetAsrDataModule(AsrDataModule):
     @lru_cache()
     def test_cuts(self) -> CutSet:
         logging.info("About to get test cuts")
-        return load_manifest(self.args.feature_dir / 'cuts_safet_dev.json.gz')
+        return load_manifest(self.args.feature_dir / 'cuts_safet_dev_clean.json.gz')
 
 
