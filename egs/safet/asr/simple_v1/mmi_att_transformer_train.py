@@ -650,7 +650,7 @@ def run(rank, world_size, args):
 
 def main():
     parser = get_parser()
-    LibriSpeechAsrDataModule.add_arguments(parser)
+    SafetAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
     world_size = args.world_size
     assert world_size >= 1
