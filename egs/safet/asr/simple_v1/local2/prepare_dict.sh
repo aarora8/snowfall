@@ -8,6 +8,7 @@ lexicon_raw_nosil=$dst_dir/lexicon/librispeech-lexicon.txt
 
 mkdir -p $dst_dir/lexicon
 wget -P $dst_dir/lexicon/ https://www.openslr.org/resources/11/librispeech-lexicon.txt
+cp $dst_dir/lexicon/librispeech-lexicon.txt  $dst_dir/lexicon/lexicon_raw_nosil.txt
 
 echo "Preparing phone lists"
 (echo SIL; echo SPN;) > $silence_phones
