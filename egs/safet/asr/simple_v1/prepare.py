@@ -52,6 +52,15 @@ def get_executor():
     yield None
 
 
+def locate_corpus(*corpus_dirs):
+    for d in corpus_dirs:
+        if os.path.exists(d):
+            return d
+    print("Please create a place on your system to put the downloaded Librispeech data "
+          "and add it to `corpus_dirs`")
+    sys.exit(1)
+
+
 def get_parser():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
@@ -64,6 +73,12 @@ def get_parser():
 
 def main():
     args = get_parser().parse_args()
+    musan_dir = locate_corpus(
+        Path('/export/corpora5/JHU/musan'),
+        Path('/export/common/data/corpora/MUSAN/musan'),
+        Path('/root/fangjun/data/musan'),
+    )
+
     output_dir = Path('exp/data')
     print('safet manifest preparation:')
     safet_manifests = prepare_safet(
@@ -71,6 +86,15 @@ def main():
         lexicon_dir='data/local/dict_nosp/lexicon/',
         output_dir=output_dir
     )
+
+    print('Musan manifest preparation:')
+    musan_cuts_path = output_dir / 'cuts_musan.json.gz'
+    musan_manifests = prepare_musan(
+        corpus_dir=musan_dir,
+        output_dir=output_dir,
+        parts=('music', 'speech', 'noise')
+    )
+
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
@@ -96,6 +120,20 @@ def main():
             safet_manifests[partition]['cuts'] = cut_set
             cut_set.to_json(output_dir / f'cuts_safet_{partition}.json.gz')
 
+        # Now onto Musan
+        if not musan_cuts_path.is_file():
+            print('Extracting features for Musan')
+            # create chunks of Musan with duration 5 - 10 seconds
+            musan_cuts = CutSet.from_manifests(
+                recordings=combine(part['recordings'] for part in musan_manifests.values())
+            ).cut_into_windows(10.0).filter(lambda c: c.duration > 5).compute_and_store_features(
+                extractor=extractor,
+                storage_path=f'{output_dir}/feats_musan',
+                num_jobs=args.num_jobs if ex is None else 80,
+                executor=ex,
+                storage_type=LilcomHdf5Writer
+            )
+            musan_cuts.to_json(musan_cuts_path)
 
 
 if __name__ == '__main__':
