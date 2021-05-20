@@ -12,6 +12,7 @@ from collections import defaultdict
 
 import torch
 import lhotse
+from lhotse.utils import fastcopy
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
 from lhotse.recipes import prepare_librispeech, prepare_safet, prepare_musan
 from lhotse import validate_recordings_and_supervisions
