@@ -8,11 +8,16 @@ import subprocess
 import sys
 from contextlib import contextmanager
 from pathlib import Path
+from collections import defaultdict
 
 import torch
+import lhotse
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
 from lhotse.recipes import prepare_librispeech, prepare_safet, prepare_musan
-
+from lhotse import validate_recordings_and_supervisions
+from lhotse.audio import Recording, RecordingSet
+from lhotse.supervision import SupervisionSegment, SupervisionSet
+from lhotse.utils import Pathlike, check_and_rglob, recursion_limit
 from snowfall.common import str2bool
 
 # Torch's multithreaded behavior needs to be disabled or it wastes a lot of CPU and
