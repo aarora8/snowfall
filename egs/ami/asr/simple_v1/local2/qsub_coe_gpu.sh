@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #$ -q gpu.q -l gpu=1
-#$ -wd /home/hltcoe/aarora/snowfall/egs/safet/asr/simple_v1/
+#$ -wd /home/hltcoe/aarora/snowfall/egs/ami/asr/simple_v1/
 #$ -V
 #$ -N train_job
 #$ -j y -o $JOB_NAME-$JOB_ID.out
