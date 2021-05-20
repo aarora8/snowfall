@@ -31,7 +31,7 @@ from snowfall.common import describe, str2bool
 from snowfall.common import load_checkpoint, save_checkpoint
 from snowfall.common import save_training_info
 from snowfall.common import setup_logger
-from snowfall.data.icsi import IcsiAsrDataModule
+from snowfall.data.ami import AmiAsrDataModule
 from snowfall.dist import cleanup_dist
 from snowfall.dist import setup_dist
 from snowfall.lexicon import Lexicon
@@ -474,9 +474,9 @@ def run(rank, world_size, args):
     P.scores = torch.zeros_like(P.scores)
     P = P.to(device)
 
-    icsispeech = IcsiAsrDataModule(args)
-    train_dl = icsispeech.train_dataloaders()
-    valid_dl = icsispeech.valid_dataloaders()
+    amispeech = AmiAsrDataModule(args)
+    train_dl = amispeech.train_dataloaders()
+    valid_dl = amispeech.valid_dataloaders()
 
     if not torch.cuda.is_available():
         logging.error('No GPU detected!')
