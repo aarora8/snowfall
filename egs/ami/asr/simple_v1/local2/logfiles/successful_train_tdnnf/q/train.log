@@ -1,0 +1,2 @@
+removed environment variable LD_RUN_PATH from submit environment - it is considered a security issue
+Your job 9176486 ("train.sh") has been submitted

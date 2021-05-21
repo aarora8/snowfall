@@ -1,0 +1,17 @@
+# Running on r4n12
+# Started at Thu May 20 11:29:19 EDT 2021
+# /home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 prepare.py 
+WARNING:root:There are 15 recordings that do not have any corresponding supervisions in the SupervisionSet.
+ami manifest preparation:
+Musan manifest preparation:
+Feature extraction:
+Processing dev 
+dev already exists - skipping.
+Processing eval 
+eval already exists - skipping.
+Processing train 
+train already exists - skipping.
+Extracting features for Musan
+Extracting and storing features (chunks progress):   0%|          | 0/15 [00:00<?, ?it/s]Extracting and storing features (chunks progress):   7%|▋         | 1/15 [01:29<20:53, 89.55s/it]Extracting and storing features (chunks progress):  67%|██████▋   | 10/15 [01:29<00:32,  6.49s/it]Extracting and storing features (chunks progress): 100%|██████████| 15/15 [01:29<00:00,  5.99s/it]
+# Accounting: time=129 threads=1
+# Finished at Thu May 20 11:31:28 EDT 2021 with status 0
