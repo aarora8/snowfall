@@ -9,7 +9,7 @@ set -eou pipefail
 . ./path.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
 # utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf decode.log /home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py
-stage=0
+stage=4
 if [ $stage -le 0 ]; then
   mkdir -p exp/data/
   local2/prepare_dict.sh
@@ -42,7 +42,7 @@ if [ $stage -le 3 ]; then
     --max-order=3 \
     data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
 fi
-
+exit
 if [ $stage -le 4 ]; then
   ngpus=1
   #python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
