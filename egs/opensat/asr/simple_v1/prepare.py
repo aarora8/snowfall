@@ -97,7 +97,7 @@ def main():
     ami_manifests = defaultdict(dict)
     recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/dev', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
-    supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
+    supervision_set_dev.to_json(output_dir / f'supervisions_ami_dev.json')
     ami_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
@@ -105,7 +105,7 @@ def main():
 
     recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/eval', 16000)
     validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
-    supervision_set_eval.to_json(output_dir / f'supervisions_eval.json')
+    supervision_set_eval.to_json(output_dir / f'supervisions_ami_eval.json')
     ami_manifests['eval'] = {
                 'recordings': recording_set_eval,
                 'supervisions': supervision_set_eval
@@ -113,7 +113,7 @@ def main():
 
     recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/archive/snowfall/ami/kaldi_data/train', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
+    supervision_set_eval.to_json(output_dir / f'supervisions_ami_train.json')
     ami_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
@@ -123,7 +123,7 @@ def main():
     icsi_manifests = defaultdict(dict)
     recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/icsi/s5/data/ihm/dev_fixed2', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
-    supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
+    supervision_set_dev.to_json(output_dir / f'supervisions_icsi_dev.json')
     icsi_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
@@ -131,7 +131,7 @@ def main():
 
     recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/icsi/s5/data/ihm/eval_fixed2', 16000)
     validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
-    supervision_set_eval.to_json(output_dir / f'supervisions_eval.json')
+    supervision_set_eval.to_json(output_dir / f'supervisions_icsi_eval.json')
     icsi_manifests['eval'] = {
                 'recordings': recording_set_eval,
                 'supervisions': supervision_set_eval
@@ -139,7 +139,7 @@ def main():
 
     recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/icsi/s5/data/ihm/train_cleaned_fixed2', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
+    supervision_set_eval.to_json(output_dir / f'supervisions_icsi_train.json')
     icsi_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
@@ -193,16 +193,16 @@ def main():
                 cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
 
             print(f"store cutset supervision")
-            cut_set = cut_set.compute_and_store_features(
-                extractor=extractor,
-                storage_path=f'{output_dir}/feats_ami_{partition}',
-                # when an executor is specified, make more partitions
-                num_jobs=args.num_jobs if ex is None else 80,
-                executor=ex,
-                storage_type=LilcomHdf5Writer
-            )
-            ami_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
+            #cut_set = cut_set.compute_and_store_features(
+            #    extractor=extractor,
+            #    storage_path=f'{output_dir}/feats_ami_{partition}',
+            #    # when an executor is specified, make more partitions
+            #    num_jobs=args.num_jobs if ex is None else 80,
+            #    executor=ex,
+            #    storage_type=LilcomHdf5Writer
+            #)
+            #ami_manifests[partition]['cuts'] = cut_set
+            #cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
 
 
         for partition, manifests in icsi_manifests.items():
@@ -220,16 +220,16 @@ def main():
                 cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
 
             print(f"store cutset supervision")
-            cut_set = cut_set.compute_and_store_features(
-                extractor=extractor,
-                storage_path=f'{output_dir}/feats_icsi_{partition}',
-                # when an executor is specified, make more partitions
-                num_jobs=args.num_jobs if ex is None else 80,
-                executor=ex,
-                storage_type=LilcomHdf5Writer
-            )
-            icsi_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_icsi_{partition}.json.gz')
+            #cut_set = cut_set.compute_and_store_features(
+            #    extractor=extractor,
+            #    storage_path=f'{output_dir}/feats_icsi_{partition}',
+            #    # when an executor is specified, make more partitions
+            #    num_jobs=args.num_jobs if ex is None else 80,
+            #    executor=ex,
+            #    storage_type=LilcomHdf5Writer
+            #)
+            #icsi_manifests[partition]['cuts'] = cut_set
+            #cut_set.to_json(output_dir / f'cuts_icsi_{partition}.json.gz')
 
         # Now onto Musan
         if not musan_cuts_path.is_file():
