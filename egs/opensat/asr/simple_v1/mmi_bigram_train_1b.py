@@ -21,7 +21,7 @@ from torch.nn.utils import clip_grad_value_
 from torch.utils.tensorboard import SummaryWriter
 from typing import Dict, Optional, Tuple, List
 
-from lhotse import CutSet
+from lhotse import CutSet, Fbank, load_manifest
 from lhotse.dataset import BucketingSampler, CutConcatenate, CutMix, K2SpeechRecognitionDataset, SingleCutSampler
 from lhotse.utils import fix_random_seed, nullcontext
 from snowfall.common import describe
@@ -297,6 +297,13 @@ def main():
     logging.info("About to get train cuts")
     cuts_train = CutSet.from_json(feature_dir /
                                   'cuts_safet_train.json.gz')
+
+    cuts_train = (
+                    cuts_train +
+                    load_manifest(feature_dir / 'cuts_ami_train.json.gz') +
+                    load_manifest(feature_dir / 'cuts_icsi_train.json.gz')
+            )
+
     logging.info("About to get dev cuts")
     cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev_clean.json.gz')
     train = K2SpeechRecognitionDataset(cuts_train)
