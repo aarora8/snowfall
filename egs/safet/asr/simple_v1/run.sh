@@ -17,7 +17,6 @@ fi
 
 if [ $stage -le 1 ]; then
   local/prepare_lang.sh \
-    --position-dependent-phones false \
     data/local/dict_nosp \
     "<UNK>" \
     data/local/lang_tmp_nosp \
