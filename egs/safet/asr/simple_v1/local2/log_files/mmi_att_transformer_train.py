@@ -339,7 +339,7 @@ def get_parser():
     parser.add_argument(
         '--model-type',
         type=str,
-        default="conformer",
+        default="contextnet",
         choices=["transformer", "conformer", "contextnet"],
         help="Model type.")
     parser.add_argument(
