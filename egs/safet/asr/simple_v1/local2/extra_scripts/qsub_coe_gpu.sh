@@ -3,13 +3,13 @@
 #$ -q gpu.q -l gpu=1
 #$ -wd /home/hltcoe/aarora/snowfall/egs/safet/asr/simple_v1/
 #$ -V
-#$ -N train_job
+#$ -N decode_job
 #$ -j y -o $JOB_NAME-$JOB_ID.out
 #$ -M ashish.arora.88888@gmail.com
 #$ -m bea
 #$ -l mem_free=32G
 #$ -l h_rt=24:00:00
-#$ -l hostname='!r8n04'
+#$ -l hostname='!r7n04'
 
 # big data config
 # qsub -l gpu=4 -q gpu.q@@v100 -l h_rt=72:00:00

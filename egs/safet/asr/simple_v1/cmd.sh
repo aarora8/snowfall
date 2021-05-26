@@ -13,3 +13,4 @@
 export cmd="queue.pl --mem 30G --nodes_rack 4"
 export gpu_cmd="queue.pl --mem 16G --gpu 1"
 export train_cmd_tesla="queue.pl --mem 16G --nodes_tesla 1 --gpu_queue 1"
+export cuda_cmd="queue.pl --mem 20G --gpu 1 --config conf/coe.conf"

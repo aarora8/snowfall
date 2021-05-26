@@ -270,7 +270,7 @@ def main():
     fix_random_seed(42)
 
     start_epoch = 0
-    num_epochs = 10
+    num_epochs = 20
     use_adam = True
 
     exp_dir = f'exp-tdnnf-adam-mmi-bigram'

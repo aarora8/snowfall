@@ -76,11 +76,11 @@ class Tdnnf1a(AcousticModel):
     def __init__(self,
                  num_features,
                  num_classes,
-                 hidden_dim=1024,
-                 bottleneck_dim=128,
+                 hidden_dim=1536,
+                 bottleneck_dim=160,
                  prefinal_bottleneck_dim=256,
-                 kernel_size_list=[3, 3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3],
-                 subsampling_factor_list=[1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1],
+                 kernel_size_list=[3, 3, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3],
+                 subsampling_factor_list=[1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                  subsampling_factor=3):
         super().__init__()
 
