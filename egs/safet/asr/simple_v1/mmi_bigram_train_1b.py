@@ -33,6 +33,7 @@ from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
 from snowfall.models.tdnnf import Tdnnf1a
+from snowfall.models.cnn_tdnn import CnnTdnn1a
 from snowfall.objectives.mmi import LFMMILoss
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -270,7 +271,7 @@ def main():
     fix_random_seed(42)
 
     start_epoch = 0
-    num_epochs = 15
+    num_epochs = 9
     use_adam = True
 
     exp_dir = f'exp-tdnnf-adam-mmi-bigram'
@@ -345,12 +346,15 @@ def main():
         sys.exit(-1)
 
     logging.info("About to create model")
-    model = TdnnLstm1b(num_features=80,
-                       num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-                       subsampling_factor=3)
+    #model = TdnnLstm1b(num_features=80,
+    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+    #                   subsampling_factor=3)
     #model = Tdnnf1a(num_features=80,
     #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
     #                   subsampling_factor=3)
+    model = CnnTdnn1a(num_features=80,
+                       num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+                       subsampling_factor=3)
     model.P_scores = nn.Parameter(P.scores.clone(), requires_grad=True)
 
     model.to(device)

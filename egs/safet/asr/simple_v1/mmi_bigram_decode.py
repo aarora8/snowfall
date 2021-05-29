@@ -26,6 +26,7 @@ from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
 from snowfall.models.tdnnf import Tdnnf1a
+from snowfall.models.cnn_tdnn import CnnTdnn1a
 from snowfall.training.ctc_graph import build_ctc_topo
 from snowfall.training.mmi_graph import create_bigram_phone_lm
 from snowfall.training.mmi_graph import get_phone_symbols
@@ -225,7 +226,10 @@ def main():
     #model = Tdnnf1a(num_features=80,
     #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
     #                   subsampling_factor=3)
-    model = TdnnLstm1b(num_features=80,
+    #model = TdnnLstm1b(num_features=80,
+    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+    #                   subsampling_factor=3)
+    model = CnnTdnn1a(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=3)
     model.P_scores = torch.nn.Parameter(P.scores.clone(), requires_grad=False)
