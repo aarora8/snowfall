@@ -270,7 +270,7 @@ def main():
     fix_random_seed(42)
 
     start_epoch = 0
-    num_epochs = 20
+    num_epochs = 15
     use_adam = True
 
     exp_dir = f'exp-tdnnf-adam-mmi-bigram'
@@ -345,12 +345,12 @@ def main():
         sys.exit(-1)
 
     logging.info("About to create model")
-    #model = TdnnLstm1b(num_features=80,
-    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-    #                   subsampling_factor=3)
-    model = Tdnnf1a(num_features=80,
+    model = TdnnLstm1b(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=3)
+    #model = Tdnnf1a(num_features=80,
+    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+    #                   subsampling_factor=3)
     model.P_scores = nn.Parameter(P.scores.clone(), requires_grad=True)
 
     model.to(device)

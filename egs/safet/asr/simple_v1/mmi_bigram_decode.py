@@ -222,7 +222,10 @@ def main():
 
     logging.debug("About to load model")
     device = torch.device('cuda')
-    model = Tdnnf1a(num_features=80,
+    #model = Tdnnf1a(num_features=80,
+    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+    #                   subsampling_factor=3)
+    model = TdnnLstm1b(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=3)
     model.P_scores = torch.nn.Parameter(P.scores.clone(), requires_grad=False)
