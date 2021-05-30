@@ -45,7 +45,7 @@ fi
 if [ $stage -le 4 ]; then
   ngpus=1
   #python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
-  utils/queue.pl --mem 20G --gpu 1 --config conf/coe.conf exp/train1b.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train_1b.py
+  utils/queue.pl --mem 20G --gpu 1 --config conf/coe.conf exp/train1b.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train.py
 fi
 if [ $stage -le 5 ]; then
   #python3 ./mmi_bigram_decode.py --epoch 9

@@ -70,7 +70,6 @@ class CNNReluBN(nn.Module):
         #    x = F.relu(bn(conv(x)))
         x = self.layers(x)
         b, c, t, f = x.size()
-        print(x.size())
         x = self.out(x.transpose(1, 2).contiguous().view(b, t, c * f))
         #x = x.transpose(1, 2).contiguous().view(b, t, c * f)
         return x
