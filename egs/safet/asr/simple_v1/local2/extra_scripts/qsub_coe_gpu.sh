@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
-#$ -q gpu.q -l gpu=1
+#$ -q gpu.q@@v100 -l gpu=1
 #$ -wd /home/hltcoe/aarora/snowfall/egs/safet/asr/simple_v1/
 #$ -V
-#$ -N decode_job
+#$ -N train_job
 #$ -j y -o $JOB_NAME-$JOB_ID.out
 #$ -M ashish.arora.88888@gmail.com
 #$ -m bea
