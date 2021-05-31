@@ -32,9 +32,7 @@ from snowfall.dist import cleanup_dist, setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
-#from snowfall.models.tdnnf import Tdnnf1a
 from snowfall.models.cnn_tdnnf import Tdnnf1a, tdnnf_optimizer
-from snowfall.models.cnn_tdnn1b import CnnTdnn1a
 from snowfall.objectives.mmi import LFMMILoss
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -347,15 +345,9 @@ def main():
         sys.exit(-1)
 
     logging.info("About to create model")
-    #model = TdnnLstm1b(num_features=80,
-    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-    #                   subsampling_factor=3)
     model = Tdnnf1a(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=3)
-    #model = CnnTdnn1a(num_features=80,
-    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-    #                   subsampling_factor=3)
     model.P_scores = nn.Parameter(P.scores.clone(), requires_grad=True)
 
     model.to(device)
@@ -367,6 +359,9 @@ def main():
         optimizer = optim.AdamW(model.parameters(),
                                 lr=learning_rate,
                                 weight_decay=weight_decay)
+        # Equivalent to the following in the epoch loop:
+        #  if epoch > 6:
+        #      curr_learning_rate *= 0.8
         lr_scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
             lambda ep: 1.0 if ep < 7 else 0.8 ** (ep - 6)
@@ -387,7 +382,6 @@ def main():
             gamma=lr_schedule_gamma
         )
 
-    
     best_objf = np.inf
     best_valid_objf = np.inf
     best_epoch = start_epoch
