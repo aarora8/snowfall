@@ -348,32 +348,29 @@ def main():
 
     # load dataset
     #librispeech = LibriSpeechAsrDataModule(args)
-    safetspeech = SafetAsrDataModule(args)
     #test_sets = ['test-clean', 'test-other']
-    test_sets = ['dev']
-    for test_set, test_dl in zip(test_sets, safetspeech.test_dataloaders()):
-        logging.info(f'* DECODING: {test_set}')
+    safetspeech = SafetAsrDataModule(args)
+    test_dl = safetspeech.test_dataloaders()
+    results = decode(dataloader=test_dl,
+                     model=model,
+                     device=device,
+                     HLG=HLG,
+                     symbols=symbol_table,
+                     num_paths=num_paths,
+                     G=G,
+                     use_whole_lattice=use_whole_lattice,
+                     output_beam_size=output_beam_size)
 
-        results = decode(dataloader=test_dl,
-                         model=model,
-                         device=device,
-                         HLG=HLG,
-                         symbols=symbol_table,
-                         num_paths=num_paths,
-                         G=G,
-                         use_whole_lattice=use_whole_lattice,
-                         output_beam_size=output_beam_size)
+    recog_path = exp_dir / f'recogs-dev.txt'
+    store_transcripts(path=recog_path, texts=results)
+    logging.info(f'The transcripts are stored in {recog_path}')
 
-        recog_path = exp_dir / f'recogs-{test_set}.txt'
-        store_transcripts(path=recog_path, texts=results)
-        logging.info(f'The transcripts are stored in {recog_path}')
-
-        # The following prints out WERs, per-word error statistics and aligned
-        # ref/hyp pairs.
-        errs_filename = exp_dir / f'errs-{test_set}.txt'
-        with open(errs_filename, 'w') as f:
-            write_error_stats(f, test_set, results)
-        logging.info('Wrote detailed error stats to {}'.format(errs_filename))
+    # The following prints out WERs, per-word error statistics and aligned
+    # ref/hyp pairs.
+    errs_filename = exp_dir / f'errs-dev.txt'
+    with open(errs_filename, 'w') as f:
+        write_error_stats(f, 'dev', results)
+    logging.info('Wrote detailed error stats to {}'.format(errs_filename))
 
 
 torch.set_num_threads(1)
