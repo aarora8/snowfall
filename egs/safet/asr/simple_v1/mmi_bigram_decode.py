@@ -25,9 +25,9 @@ from snowfall.decoding.graph import compile_HLG
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
-#from snowfall.models.tdnnf import Tdnnf1a
-from snowfall.models.cnn_tdnnf import Tdnnf1a
-from snowfall.models.cnn_tdnn1b import CnnTdnn1a
+from snowfall.models.tdnnf import Tdnnf1a
+#from snowfall.models.cnn_tdnnf import Tdnnf1a
+#from snowfall.models.cnn_tdnn1b import CnnTdnn1a
 from snowfall.training.ctc_graph import build_ctc_topo
 from snowfall.training.mmi_graph import create_bigram_phone_lm
 from snowfall.training.mmi_graph import get_phone_symbols

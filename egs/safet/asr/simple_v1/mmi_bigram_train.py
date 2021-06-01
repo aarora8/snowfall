@@ -32,7 +32,8 @@ from snowfall.dist import cleanup_dist, setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
-from snowfall.models.cnn_tdnnf import Tdnnf1a, tdnnf_optimizer
+#from snowfall.models.cnn_tdnnf import Tdnnf1a, tdnnf_optimizer
+from snowfall.models.tdnnf import Tdnnf1a, tdnnf_optimizer
 from snowfall.objectives.mmi import LFMMILoss
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -270,7 +271,7 @@ def main():
     fix_random_seed(42)
 
     start_epoch = 0
-    num_epochs = 10
+    num_epochs = 15
     use_adam = True
 
     exp_dir = f'exp-tdnnf-adam-mmi-bigram'
@@ -364,7 +365,7 @@ def main():
         #      curr_learning_rate *= 0.8
         lr_scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
-            lambda ep: 1.0 if ep < 7 else 0.8 ** (ep - 6)
+            lambda ep: 1.0 if ep < 12 else 0.8 ** (ep - 12)
         )
     else:
         learning_rate = 5e-5

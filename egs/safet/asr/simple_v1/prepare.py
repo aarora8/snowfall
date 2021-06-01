@@ -10,9 +10,14 @@ from contextlib import contextmanager
 from pathlib import Path
 
 import torch
+import lhotse
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
 from lhotse.recipes import prepare_librispeech, prepare_safet, prepare_musan
-
+from lhotse.utils import fastcopy
+from lhotse import validate_recordings_and_supervisions
+from lhotse.audio import Recording, RecordingSet
+from lhotse.supervision import SupervisionSegment, SupervisionSet
+from lhotse.utils import Pathlike, check_and_rglob, recursion_limit
 from snowfall.common import str2bool
 
 # Torch's multithreaded behavior needs to be disabled or it wastes a lot of CPU and
@@ -79,14 +84,6 @@ def main():
         Path('/root/fangjun/data/musan'),
     )
 
-    output_dir = Path('exp/data')
-    print('safet manifest preparation:')
-    safet_manifests = prepare_safet(
-        corpus_dir='/exp/aarora/corpora/safet/',
-        lexicon_dir='data/local/dict_nosp/lexicon/',
-        output_dir=output_dir
-    )
-
     print('Musan manifest preparation:')
     musan_cuts_path = output_dir / 'cuts_musan.json.gz'
     musan_manifests = prepare_musan(
@@ -94,6 +91,40 @@ def main():
         output_dir=output_dir,
         parts=('music', 'speech', 'noise')
     )
+
+    output_dir = Path('exp/data')
+    #print('safet manifest preparation:')
+    #safet_manifests = prepare_safet(
+    #    corpus_dir='/exp/aarora/corpora/safet/',
+    #    lexicon_dir='data/local/dict_nosp/lexicon/',
+    #    output_dir=output_dir
+    #)
+
+    print('safet manifest preparation:')
+    ami_manifests = defaultdict(dict)
+    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/dev_clean', 16000)
+    validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
+    supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
+    ami_manifests['dev_clean'] = {
+                'recordings': recording_set_dev,
+                'supervisions': supervision_set_dev
+            }
+
+    recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1', 16000)
+    validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
+    supervision_set_eval.to_json(output_dir / f'supervisions_eval.json')
+    ami_manifests['dev'] = {
+                'recordings': recording_set_eval,
+                'supervisions': supervision_set_eval
+            }
+
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1/train_cleaned', 16000)
+    validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
+    supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
+    ami_manifests['train'] = {
+                'recordings': recording_set_train,
+                'supervisions': supervision_set_train
+            }
 
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))

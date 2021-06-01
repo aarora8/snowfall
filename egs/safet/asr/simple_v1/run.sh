@@ -28,19 +28,19 @@ if [ $stage -le 2 ]; then
   utils/queue.pl --mem 30G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
-if [ $stage -le 3 ]; then
-  echo "LM preparation"
-  local2/prepare_lm.py
-  local2/train_lm_srilm.sh
-  gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
-
-  # Build G
-  python3 -m kaldilm \
-    --read-symbol-table="data/lang_nosp/words.txt" \
-    --disambig-symbol='#0' \
-    --max-order=3 \
-    data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
-fi
+#if [ $stage -le 3 ]; then
+#  echo "LM preparation"
+#  local2/prepare_lm.py
+#  local2/train_lm_srilm.sh
+#  gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
+#
+#  # Build G
+#  python3 -m kaldilm \
+#    --read-symbol-table="data/lang_nosp/words.txt" \
+#    --disambig-symbol='#0' \
+#    --max-order=3 \
+#    data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
+#fi
 
 if [ $stage -le 4 ]; then
   ngpus=1

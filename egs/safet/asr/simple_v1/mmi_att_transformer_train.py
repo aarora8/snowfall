@@ -347,7 +347,7 @@ def get_parser():
     parser.add_argument(
         '--model-type',
         type=str,
-        default="conformer",
+        default="contextnet",
         choices=["transformer", "conformer", "contextnet"],
         help="Model type.")
     parser.add_argument(
@@ -436,7 +436,7 @@ def get_parser():
     parser.add_argument(
         '--use-pruned-intersect',
         type=str2bool,
-        default=False,
+        default=True,
         help='True to use pruned intersect to compute the denominator lattice. ' \
              'You probably want to set it to True if you have a very large LM. ' \
              'In that case, you will get an OOM if it is False. ' )
