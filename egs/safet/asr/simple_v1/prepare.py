@@ -8,6 +8,7 @@ import subprocess
 import sys
 from contextlib import contextmanager
 from pathlib import Path
+from collections import defaultdict
 
 import torch
 import lhotse
@@ -78,6 +79,7 @@ def get_parser():
 
 def main():
     args = get_parser().parse_args()
+    output_dir = Path('exp/data')
     musan_dir = locate_corpus(
         Path('/export/corpora5/JHU/musan'),
         Path('/export/common/data/corpora/MUSAN/musan'),
@@ -92,7 +94,6 @@ def main():
         parts=('music', 'speech', 'noise')
     )
 
-    output_dir = Path('exp/data')
     #print('safet manifest preparation:')
     #safet_manifests = prepare_safet(
     #    corpus_dir='/exp/aarora/corpora/safet/',
@@ -101,11 +102,11 @@ def main():
     #)
 
     print('safet manifest preparation:')
-    ami_manifests = defaultdict(dict)
+    safet_manifests = defaultdict(dict)
     recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/dev_clean', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
-    ami_manifests['dev_clean'] = {
+    safet_manifests['dev_clean'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
             }
@@ -113,15 +114,15 @@ def main():
     recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1', 16000)
     validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
     supervision_set_eval.to_json(output_dir / f'supervisions_eval.json')
-    ami_manifests['dev'] = {
+    safet_manifests['dev'] = {
                 'recordings': recording_set_eval,
                 'supervisions': supervision_set_eval
             }
 
-    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1/train_cleaned', 16000)
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/train_cleaned', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
-    ami_manifests['train'] = {
+    safet_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
             }
