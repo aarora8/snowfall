@@ -279,7 +279,7 @@ def main():
     sampler = SingleCutSampler(cuts_test, max_frames=10000)
     logging.info("About to create test dataloader")
     test_dl = torch.utils.data.DataLoader(test, batch_size=None, sampler=sampler, num_workers=1)
-
+    print(test_dl)
     logging.debug("convert HLG to device")
     HLG = HLG.to(device)
     HLG.aux_labels = k2.ragged.remove_values_eq(HLG.aux_labels, 0)
