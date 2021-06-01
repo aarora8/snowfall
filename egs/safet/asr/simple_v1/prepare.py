@@ -141,7 +141,9 @@ def main():
             )
             cut_set = cut_set.trim_to_supervisions()
             cut_set = cut_set.map(lambda c: fastcopy(c, supervisions=[s for s in c.supervisions if s.start == 0 and abs(s.duration - c.duration) <= 1e-3]))
-            cut_set.to_json(output_dir / f'cuts_safet__wo_sp_{partition}.json.gz')
+            cut_set = cut_set.filter(lambda c: c.duration >= 1)
+            #cut_set = cut_set.filter(lambda c: fastcopy(c, c.duration >= 1))
+            #cut_set.to_json(output_dir / f'cuts_safet__wo_sp_{partition}.json.gz')
             if 'train' in partition:
                 cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
             cut_set = cut_set.compute_and_store_features(
