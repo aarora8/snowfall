@@ -211,7 +211,7 @@ def get_parser():
     parser.add_argument(
         '--use-lm-rescoring',
         type=str2bool,
-        default=True,
+        default=False,
         help='When enabled, it uses LM for rescoring')
     parser.add_argument(
         '--num-paths',
@@ -335,40 +335,8 @@ def main():
         d = torch.load(lang_dir / 'HLG.pt')
         HLG = k2.Fsa.from_dict(d)
 
-    if use_lm_rescoring:
-        if use_whole_lattice:
-            logging.info('Rescoring with the whole lattice')
-        else:
-            logging.info(f'Rescoring with n-best list, n is {num_paths}')
-        first_word_disambig_id = find_first_disambig_symbol(symbol_table)
-        if not os.path.exists(lang_dir / 'G_4_gram.pt'):
-            logging.debug('Loading G_4_gram.fst.txt')
-            with open(lang_dir / 'G_4_gram.fst.txt') as f:
-                G = k2.Fsa.from_openfst(f.read(), acceptor=False)
-                # G.aux_labels is not needed in later computations, so
-                # remove it here.
-                del G.aux_labels
-                # CAUTION(fangjun): The following line is crucial.
-                # Arcs entering the back-off state have label equal to #0.
-                # We have to change it to 0 here.
-                G.labels[G.labels >= first_word_disambig_id] = 0
-                G = k2.create_fsa_vec([G]).to(device)
-                G = k2.arc_sort(G)
-                torch.save(G.as_dict(), lang_dir / 'G_4_gram.pt')
-        else:
-            logging.debug('Loading pre-compiled G_4_gram.pt')
-            d = torch.load(lang_dir / 'G_4_gram.pt')
-            G = k2.Fsa.from_dict(d).to(device)
-
-        if use_whole_lattice:
-            # Add epsilon self-loops to G as we will compose
-            # it with the whole lattice later
-            G = k2.add_epsilon_self_loops(G)
-            G = k2.arc_sort(G)
-            G = G.to(device)
-    else:
-        logging.debug('Decoding without LM rescoring')
-        G = None
+    logging.debug('Decoding without LM rescoring')
+    G = None
 
     logging.debug("convert HLG to device")
     HLG = HLG.to(device)
@@ -383,7 +351,7 @@ def main():
     safetspeech = SafetAsrDataModule(args)
     #test_sets = ['test-clean', 'test-other']
     test_sets = ['dev']
-    for test_set, test_dl in zip(test_sets, librispeech.test_dataloaders()):
+    for test_set, test_dl in zip(test_sets, safetspeech.test_dataloaders()):
         logging.info(f'* DECODING: {test_set}')
 
         results = decode(dataloader=test_dl,
