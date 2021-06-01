@@ -47,7 +47,7 @@ class AsrDataModule(DataModule):
         group.add_argument(
             '--max-duration',
             type=int,
-            default=200.0,
+            default=100.0,
             help="Maximum pooled recordings duration (seconds) in a single batch.")
         group.add_argument(
             '--bucketing-sampler',
@@ -154,7 +154,7 @@ class AsrDataModule(DataModule):
             train,
             sampler=train_sampler,
             batch_size=None,
-            num_workers=4,
+            num_workers=1,
             persistent_workers=True,
         )
         return train_dl
@@ -192,7 +192,7 @@ class AsrDataModule(DataModule):
             validate,
             sampler=valid_sampler,
             batch_size=None,
-            num_workers=2,
+            num_workers=1,
             persistent_workers=True,
         )
         return valid_dl
