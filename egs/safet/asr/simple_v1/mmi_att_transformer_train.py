@@ -13,6 +13,7 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
+from collections import OrderedDict
 
 import k2
 import numpy as np
@@ -556,7 +557,14 @@ def run(rank, world_size, args):
         ali_model_fname = Path(f'exp-contextnet-noam-mmi-att-musan-sa-vgg/epoch-{args.ali_model_epoch}.pt')
         assert ali_model_fname.is_file(), \
                 f'ali model filename {ali_model_fname} does not exist!'
-        ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
+        checkpoint = torch.load(ali_model_fname, map_location='cpu')
+        loaded_dict = checkpoint['state_dict']
+        new_state_dict = OrderedDict()
+        for k, v in loaded_dict.items():
+            if k != 'P_scores':
+                new_state_dict[k] = v
+        ali_model.load_state_dict(new_state_dict)
+        #ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
         ali_model.to(device)
 
         ali_model.eval()
