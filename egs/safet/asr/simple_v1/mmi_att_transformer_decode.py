@@ -88,6 +88,8 @@ def calculate_WER(results: list):
         f'[{errors["total"]} / {total_words}, {errors["ins"]} ins, {errors["del"]} del, {errors["sub"]} sub ]'
     )
 
+    return filtered_results
+
 
 def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
            device: Union[str, torch.device], HLG: Fsa, symbols: SymbolTable,
@@ -415,17 +417,17 @@ def main():
                      use_whole_lattice=use_whole_lattice,
                      output_beam_size=output_beam_size)
 
-    calculate_WER(results)
+    filtered_results = calculate_WER(results)
 
     recog_path = exp_dir / f'recogs-dev.txt'
-    store_transcripts(path=recog_path, texts=results)
+    store_transcripts(path=recog_path, texts=filtered_results)
     logging.info(f'The transcripts are stored in {recog_path}')
 
     # The following prints out WERs, per-word error statistics and aligned
     # ref/hyp pairs.
     errs_filename = exp_dir / f'errs-dev.txt'
     with open(errs_filename, 'w') as f:
-        write_error_stats(f, 'dev', results)
+        write_error_stats(f, 'dev', filtered_results)
     logging.info('Wrote detailed error stats to {}'.format(errs_filename))
 
 
