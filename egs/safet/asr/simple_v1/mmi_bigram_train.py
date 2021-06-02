@@ -32,8 +32,6 @@ from snowfall.dist import cleanup_dist, setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
-#from snowfall.models.cnn_tdnnf import Tdnnf1a, tdnnf_optimizer
-from snowfall.models.tdnnf import Tdnnf1a, tdnnf_optimizer
 from snowfall.objectives.mmi import LFMMILoss
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -271,10 +269,10 @@ def main():
     fix_random_seed(42)
 
     start_epoch = 0
-    num_epochs = 15
+    num_epochs = 10
     use_adam = True
 
-    exp_dir = f'exp-tdnnf-adam-mmi-bigram'
+    exp_dir = f'exp-lstm-adam-mmi-bigram-musan-dist-s4'
     setup_logger('{}/log/log-train'.format(exp_dir), use_console=args.local_rank == 0)
     tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard') if args.local_rank == 0 else None
 
@@ -305,7 +303,7 @@ def main():
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
             cuts_train,
-            max_frames=10000,
+            max_frames=40000,
             shuffle=True,
             num_buckets=30
         )
@@ -313,7 +311,7 @@ def main():
         logging.info('Using regular sampler with cut concatenation.')
         train_sampler = SingleCutSampler(
             cuts_train,
-            max_frames=10000,
+            max_frames=30000,
             shuffle=True,
         )
     logging.info("About to create train dataloader")
@@ -332,7 +330,7 @@ def main():
     #       torch.distributed.all_reduce() tends to hang indefinitely inside
     #       NCCL after ~3000 steps. With the current approach, we can still report
     #       the loss on the full validation set.
-    valid_sampler = SingleCutSampler(cuts_dev, max_frames=10000, world_size=1, rank=0)
+    valid_sampler = SingleCutSampler(cuts_dev, max_frames=90000, world_size=1, rank=0)
     logging.info("About to create dev dataloader")
     valid_dl = torch.utils.data.DataLoader(
         validate,
@@ -346,9 +344,9 @@ def main():
         sys.exit(-1)
 
     logging.info("About to create model")
-    model = Tdnnf1a(num_features=80,
+    model = TdnnLstm1b(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-                       subsampling_factor=3)
+                       subsampling_factor=4)
     model.P_scores = nn.Parameter(P.scores.clone(), requires_grad=True)
 
     model.to(device)
@@ -365,7 +363,7 @@ def main():
         #      curr_learning_rate *= 0.8
         lr_scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
-            lambda ep: 1.0 if ep < 12 else 0.8 ** (ep - 12)
+            lambda ep: 1.0 if ep < 7 else 0.8 ** (ep - 6)
         )
     else:
         learning_rate = 5e-5

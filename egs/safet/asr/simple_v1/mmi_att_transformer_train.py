@@ -39,10 +39,9 @@ from snowfall.dist import setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.conformer import Conformer
-#from snowfall.models.tdnn_lstm import TdnnLstm1b  # alignment model
-#from snowfall.models.tdnnf import Tdnnf1a, tdnnf_optimizer # alignment model
+from snowfall.models.tdnn_lstm import TdnnLstm1b  # alignment model
 from snowfall.models.transformer import Noam, Transformer
-from snowfall.models.contextnet import ContextNet # alignment model
+from snowfall.models.contextnet import ContextNet
 from snowfall.objectives import LFMMILoss, encode_supervisions
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -100,8 +99,15 @@ def get_objf(batch: Dict,
             # scale less than one so it will be encouraged
             # to mimic ali_model's output
             ali_model_scale = 500.0 / (global_batch_idx_train // accum_grad + 500)
+            nnet_output_orig = nnet_output
             nnet_output = nnet_output.clone()  # or log-softmax backprop will fail.
             nnet_output[:, :,:min_len] += ali_model_scale * ali_model_output[:, :,:min_len]
+
+            x = nnet_output.abs().sum().item()
+            if x - x != 0:
+                print("Warning: reverting nnet output since it seems to be nan.")
+                nnet_output = nnet_output_orig
+
 
         # nnet_output is [N, C, T]
         nnet_output = nnet_output.permute(0, 2, 1)  # now nnet_output is [N, T, C]
@@ -421,11 +427,11 @@ def get_parser():
         '--use-ali-model',
         type=str2bool,
         default=True,
-        help='If true, we assume that you have run ./ctc_train.py '
-             'and you have some checkpoints inside the directory '
-             'exp-lstm-adam-ctc-musan/ .'
-             'It will use exp-lstm-adam-ctc-musan/epoch-{ali-model-epoch}.pt '
-             'as the pre-trained alignment model'
+        help='If true, we assume that you have run ./mmi_bigram_train.py '
+        'and you have some checkpoints inside the directory '
+        'exp-lstm-adam-mmi-bigram-musan-dist-s4/. It will use '
+        'exp-lstm-adam-mmi-bigram-musan-dist-s4/epoch-{ali-model-epoch}.pt '  # noqa
+        'as the pre-trained alignment model'
     )
     parser.add_argument(
         '--ali-model-epoch',
@@ -438,7 +444,7 @@ def get_parser():
     parser.add_argument(
         '--use-pruned-intersect',
         type=str2bool,
-        default=True,
+        default=False,
         help='True to use pruned intersect to compute the denominator lattice. ' \
              'You probably want to set it to True if you have a very large LM. ' \
              'In that case, you will get an OOM if it is False. ' )
@@ -469,7 +475,7 @@ def run(rank, world_size, args):
     fix_random_seed(42)
     setup_dist(rank, world_size, args.master_port)
 
-    exp_dir = Path('exp-' + model_type + '-noam-mmi-att-musan-sa-vgg')
+    exp_dir = Path('exp-' + model_type + '-noam-mmi-att-musan-sa-vgg-mmiali')
     setup_logger(f'{exp_dir}/log/log-train-{rank}')
     if args.tensorboard and rank == 0:
         tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard')
@@ -550,13 +556,16 @@ def run(rank, world_size, args):
 
     # Now for the alignment model, if any
     if args.use_ali_model:
-        ali_model = ContextNet(
+        ali_model = TdnnLstm1b(
             num_features=80,
-            num_classes=len(phone_ids) + 1) # +1 for the blank symbol
+            num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+            subsampling_factor=4)
 
-        ali_model_fname = Path(f'exp-contextnet-noam-mmi-att-musan-sa-vgg/epoch-{args.ali_model_epoch}.pt')
+        ali_model_fname = Path(f'exp-lstm-adam-mmi-bigram-musan-dist-s4/epoch-{args.ali_model_epoch}.pt')
         assert ali_model_fname.is_file(), \
                 f'ali model filename {ali_model_fname} does not exist!'
+        ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
+        ali_model.to(device)
         #checkpoint = torch.load(ali_model_fname, map_location='cpu')
         #loaded_dict = checkpoint['state_dict']
         #loaded_dict = {key: loaded_dict[key] for key in ali_model.state_dict()}
@@ -566,10 +575,8 @@ def run(rank, world_size, args):
         #    if k != 'P_scores':
         #        new_state_dict[k] = v
         #ali_model.load_state_dict(new_state_dict)
-        ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
-        ali_model.to(device)
 
-        #ali_model.eval()
+        # ali_model.eval()
         ali_model.requires_grad_(False)
         logging.info(f'Use ali_model: {ali_model_fname}')
     else:
@@ -687,7 +694,7 @@ def run(rank, world_size, args):
 def main():
     parser = get_parser()
     SafetAsrDataModule.add_arguments(parser)
-    #LibriSpeechAsrDataModule.add_arguments(parser)
+    # LibriSpeechAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
     world_size = args.world_size
     assert world_size >= 1
