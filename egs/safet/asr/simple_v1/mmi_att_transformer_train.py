@@ -39,9 +39,9 @@ from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.conformer import Conformer
 #from snowfall.models.tdnn_lstm import TdnnLstm1b  # alignment model
-from snowfall.models.tdnnf import Tdnnf1a, tdnnf_optimizer # alignment model
+#from snowfall.models.tdnnf import Tdnnf1a, tdnnf_optimizer # alignment model
 from snowfall.models.transformer import Noam, Transformer
-from snowfall.models.contextnet import ContextNet
+from snowfall.models.contextnet import ContextNet # alignment model
 from snowfall.objectives import LFMMILoss, encode_supervisions
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -429,7 +429,7 @@ def get_parser():
     parser.add_argument(
         '--ali-model-epoch',
         type=int,
-        default=9,
+        default=7,
         help='If --use-ali-model is True, load '
              'exp-lstm-adam-ctc-musan/epoch-{ali-model-epoch}.pt as the alignment model.'
              'Used only if --use-ali-model is True.'
@@ -549,12 +549,11 @@ def run(rank, world_size, args):
 
     # Now for the alignment model, if any
     if args.use_ali_model:
-        ali_model = TdnnLstm1b(
+        ali_model = ContextNet(
             num_features=80,
-            num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-            subsampling_factor=4)
+            num_classes=len(phone_ids) + 1) # +1 for the blank symbol
 
-        ali_model_fname = Path(f'exp-tdnnf-adam-mmi-bigram/epoch-{args.ali_model_epoch}.pt')
+        ali_model_fname = Path(f'exp-contextnet-noam-mmi-att-musan-sa-vgg/epoch-{args.ali_model_epoch}.pt')
         assert ali_model_fname.is_file(), \
                 f'ali model filename {ali_model_fname} does not exist!'
         ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
