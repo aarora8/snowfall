@@ -10,7 +10,9 @@ import logging
 import numpy as np
 import os
 import torch
+import re
 from k2 import Fsa, SymbolTable
+from kaldialign import edit_distance
 from pathlib import Path
 from typing import List
 from typing import Union
@@ -33,6 +35,58 @@ from snowfall.models.contextnet import ContextNet
 from snowfall.training.ctc_graph import build_ctc_topo
 from snowfall.training.mmi_graph import create_bigram_phone_lm
 from snowfall.training.mmi_graph import get_phone_symbols
+
+
+def WER_output_filter(text: list):
+    filtered_text = []
+    for word in text:
+        word = word.upper()
+        word = re.sub(r'[.,?]', ' ', word)
+        word = re.sub(r'{[^}]+}', '<UNK>', word)
+        word = re.sub('<NOISE>', '<UNK>', word)
+        word = re.sub('\s+\)\)', '))', word)
+        word = re.sub('\(\(<UNK>\)\)', '<UNK>', word)
+        word = re.sub('%[A-Z]+', '<UNK>', word)
+        word = re.sub('--', '', word)
+        word = re.sub(' -- ', '', word)
+        word = re.sub(' --$', '', word)
+        word = re.sub('\s+', ' ', word)
+        word = re.sub('\s+$', '', word)
+        word = re.sub('<UNK>', '', word)
+        word = word.strip()
+        if word:
+            filtered_text.append(word)
+    return(filtered_text)
+
+
+def calculate_WER(results: list):
+    #  compute WER with WER_output_filter
+    s = ''
+    dists = []
+    filtered_results = []
+    for ref, hyp in results:
+         ref = WER_output_filter(ref)
+         hyp = WER_output_filter(hyp)
+         if len(ref) != 0:
+             min_distance = edit_distance(ref, hyp)
+             dists.append(min_distance)
+             filtered_results.append([ref, hyp])
+             s += f'ref={ref}\n'
+             s += f'hyp={hyp}\n'
+             s += f'len={len(ref)}\n'
+             s += f'error={min_distance}\n'
+    logging.info(s)
+
+    # print kaldi-like error
+    errors = {
+        key: sum(dist[key] for dist in dists)
+        for key in ['sub', 'ins', 'del', 'total']
+    }
+    total_words = sum(len(ref) for ref, _ in filtered_results)
+    logging.info(
+        f'%WER {errors["total"] / total_words:.2%} '
+        f'[{errors["total"]} / {total_words}, {errors["ins"]} ins, {errors["del"]} del, {errors["sub"]} sub ]'
+    )
 
 
 def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
@@ -360,6 +414,8 @@ def main():
                      G=G,
                      use_whole_lattice=use_whole_lattice,
                      output_beam_size=output_beam_size)
+
+    calculate_WER(results)
 
     recog_path = exp_dir / f'recogs-dev.txt'
     store_transcripts(path=recog_path, texts=results)
