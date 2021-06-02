@@ -38,7 +38,8 @@ from snowfall.dist import setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.conformer import Conformer
-from snowfall.models.tdnn_lstm import TdnnLstm1b  # alignment model
+#from snowfall.models.tdnn_lstm import TdnnLstm1b  # alignment model
+from snowfall.models.tdnnf import Tdnnf1a, tdnnf_optimizer # alignment model
 from snowfall.models.transformer import Noam, Transformer
 from snowfall.models.contextnet import ContextNet
 from snowfall.objectives import LFMMILoss, encode_supervisions
@@ -418,7 +419,7 @@ def get_parser():
     parser.add_argument(
         '--use-ali-model',
         type=str2bool,
-        default=False,
+        default=True,
         help='If true, we assume that you have run ./ctc_train.py '
              'and you have some checkpoints inside the directory '
              'exp-lstm-adam-ctc-musan/ .'
@@ -428,7 +429,7 @@ def get_parser():
     parser.add_argument(
         '--ali-model-epoch',
         type=int,
-        default=7,
+        default=9,
         help='If --use-ali-model is True, load '
              'exp-lstm-adam-ctc-musan/epoch-{ali-model-epoch}.pt as the alignment model.'
              'Used only if --use-ali-model is True.'
@@ -553,7 +554,7 @@ def run(rank, world_size, args):
             num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
             subsampling_factor=4)
 
-        ali_model_fname = Path(f'exp-lstm-adam-mmi-bigram-musan-dist/epoch-{args.ali_model_epoch}.pt')
+        ali_model_fname = Path(f'exp-tdnnf-adam-mmi-bigram/epoch-{args.ali_model_epoch}.pt')
         assert ali_model_fname.is_file(), \
                 f'ali model filename {ali_model_fname} does not exist!'
         ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
