@@ -557,17 +557,19 @@ def run(rank, world_size, args):
         ali_model_fname = Path(f'exp-contextnet-noam-mmi-att-musan-sa-vgg/epoch-{args.ali_model_epoch}.pt')
         assert ali_model_fname.is_file(), \
                 f'ali model filename {ali_model_fname} does not exist!'
-        checkpoint = torch.load(ali_model_fname, map_location='cpu')
-        loaded_dict = checkpoint['state_dict']
-        new_state_dict = OrderedDict()
-        for k, v in loaded_dict.items():
-            if k != 'P_scores':
-                new_state_dict[k] = v
-        ali_model.load_state_dict(new_state_dict)
-        #ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
+        #checkpoint = torch.load(ali_model_fname, map_location='cpu')
+        #loaded_dict = checkpoint['state_dict']
+        #loaded_dict = {key: loaded_dict[key] for key in ali_model.state_dict()}
+        #ali_model.load_state_dict(loaded_dict)
+        #new_state_dict = OrderedDict()
+        #for k, v in loaded_dict.items():
+        #    if k != 'P_scores':
+        #        new_state_dict[k] = v
+        #ali_model.load_state_dict(new_state_dict)
+        ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
         ali_model.to(device)
 
-        ali_model.eval()
+        #ali_model.eval()
         ali_model.requires_grad_(False)
         logging.info(f'Use ali_model: {ali_model_fname}')
     else:
