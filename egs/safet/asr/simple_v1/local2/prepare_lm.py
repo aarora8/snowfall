@@ -12,7 +12,6 @@ def main():
     # Read Lhotse supervisions, remove special non-lexical tokens,
     # and write the sentences to a text file for LM training.
     logging.info(f'Preparing LM training text.')
-    lexicon =  'data/local/dict_nosp/lexicon/lexicon_raw_nosil.txt'
     sups = load_manifest('exp/data/supervisions_safet_train.json')
     f = open('exp/data/lm_train_text', 'w')
     for s in sups:
