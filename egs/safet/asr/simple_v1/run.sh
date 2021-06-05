@@ -16,15 +16,17 @@ set -eou pipefail
 stage=0
 
 if [ $stage -le 0 ]; then
-  #python3 ./prepare.py
+  echo "Stage 0: Create train, dev and dev clean data directories"
   utils/queue.pl --mem 32G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 1 ]; then
+  echo "Stage 1: Create lexicon similar to librispeech"
   local/prepare_dict.sh
 fi
 
 if [ $stage -le 2 ]; then
+  echo "Stage 2: Create the data/lang_nosp directory that has a specific HMM topolopy"
   local/prepare_lang.sh \
     --position-dependent-phones false \
     data/local/dict_nosp \
@@ -34,7 +36,7 @@ if [ $stage -le 2 ]; then
 fi
 
 if [ $stage -le 3 ]; then
-  echo "LM preparation"
+  echo "Stage 3: Create lm from train and dev clean text"
   local/prepare_lm.py
   local/train_lm_srilm.sh
   gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
@@ -48,11 +50,10 @@ if [ $stage -le 3 ]; then
 fi
 
 if [ $stage -le 4 ]; then
-  ngpus=1
-  #python3 -m torch.distributed.launch --nproc_per_node=$ngpus ./mmi_bigram_train_1b.py --world_size $ngpus
+  echo "Stage 4: train nnet model with train and dev clean data direcotries"
   utils/queue.pl --mem 32G --gpu 1 --config conf/coe.conf exp/train1b.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train.py
 fi
 if [ $stage -le 5 ]; then
-  #python3 ./mmi_bigram_decode.py --epoch 9
+  echo "Stage 5: decode dev data direcotrie with trained nnet model"
   utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf exp/decode.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py --epoch 9
 fi
