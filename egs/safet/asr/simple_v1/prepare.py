@@ -73,7 +73,7 @@ def get_parser():
         '--num-jobs',
         type=int,
         default=min(15, os.cpu_count()),
-        help='When enabled, use 960h LibriSpeech.')
+        help='number if cpu jobs')
     return parser
 
 
@@ -103,25 +103,25 @@ def main():
 
     print('safet manifest preparation:')
     safet_manifests = defaultdict(dict)
-    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/dev_clean', 16000)
-    validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
-    supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
+    recording_set_dev_clean, supervision_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/dev_clean', 16000)
+    validate_recordings_and_supervisions(recording_set_dev_clean, supervision_set_dev_clean)
+    supervision_set_dev.to_json(output_dir / f'supervisions_safet_dev_clean.json')
     safet_manifests['dev_clean'] = {
+                'recordings': recording_set_dev_clean,
+                'supervisions': supervision_set_dev_clean
+            }
+
+    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1', 16000)
+    validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
+    supervision_set_eval.to_json(output_dir / f'supervisions_safet_dev.json')
+    safet_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
             }
 
-    recording_set_eval, supervision_set_eval = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1', 16000)
-    validate_recordings_and_supervisions(recording_set_eval, supervision_set_eval)
-    supervision_set_eval.to_json(output_dir / f'supervisions_eval.json')
-    safet_manifests['dev'] = {
-                'recordings': recording_set_eval,
-                'supervisions': supervision_set_eval
-            }
-
     recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/train_cleaned', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
+    supervision_set_eval.to_json(output_dir / f'supervisions_safet_train.json')
     safet_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
@@ -141,11 +141,12 @@ def main():
             )
             cut_set = cut_set.trim_to_supervisions()
             cut_set = cut_set.map(lambda c: fastcopy(c, supervisions=[s for s in c.supervisions if s.start == 0 and abs(s.duration - c.duration) <= 1e-3]))
-            cut_set = cut_set.filter(lambda c: c.duration >= 1)
-            #cut_set = cut_set.filter(lambda c: fastcopy(c, c.duration >= 1))
-            #cut_set.to_json(output_dir / f'cuts_safet__wo_sp_{partition}.json.gz')
+            if partition != 'dev':
+                cut_set = cut_set.filter(lambda c: c.duration >= 1)
             if 'train' in partition:
+                #cut_set.to_json(output_dir / f'cuts_safet__wo_sp_{partition}.json.gz')
                 cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
+
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
                 storage_path=f'{output_dir}/feats_safet_{partition}',
