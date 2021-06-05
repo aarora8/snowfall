@@ -8,24 +8,29 @@
 set -eou pipefail
 . ./path.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
+#Prepare.py is independent
+#Prepare_dict is independent
+#Prepare_lang will run after prepare dict
+#Prepare_lm will run after prepare.py
+#Train_lm_srilm will run after prepare_lm
 stage=0
+
 if [ $stage -le 0 ]; then
-#  mkdir -p exp/data/
-  local/prepare_dict.sh
+  #python3 ./prepare.py
+  utils/queue.pl --mem 32G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 1 ]; then
+  local/prepare_dict.sh
+fi
+
+if [ $stage -le 2 ]; then
   local/prepare_lang.sh \
     --position-dependent-phones false \
     data/local/dict_nosp \
     "<UNK>" \
     data/local/lang_tmp_nosp \
     data/lang_nosp
-fi
-
-if [ $stage -le 2 ]; then
-  #python3 ./prepare.py
-  utils/queue.pl --mem 32G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 3 ]; then
