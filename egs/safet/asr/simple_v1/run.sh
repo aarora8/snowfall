@@ -11,7 +11,7 @@ set -eou pipefail
 stage=0
 if [ $stage -le 0 ]; then
 #  mkdir -p exp/data/
-  local2/prepare_dict.sh
+  local/prepare_dict.sh
 fi
 
 if [ $stage -le 1 ]; then
@@ -30,8 +30,8 @@ fi
 
 if [ $stage -le 3 ]; then
   echo "LM preparation"
-  local2/prepare_lm.py
-  local2/train_lm_srilm.sh
+  local/prepare_lm.py
+  local/train_lm_srilm.sh
   gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
 
   # Build G
