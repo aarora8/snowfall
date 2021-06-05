@@ -105,7 +105,7 @@ def main():
     safet_manifests = defaultdict(dict)
     recording_set_dev_clean, supervision_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/dev_clean', 16000)
     validate_recordings_and_supervisions(recording_set_dev_clean, supervision_set_dev_clean)
-    supervision_set_dev.to_json(output_dir / f'supervisions_safet_dev_clean.json')
+    supervision_set_dev_clean.to_json(output_dir / f'supervisions_safet_dev_clean.json')
     safet_manifests['dev_clean'] = {
                 'recordings': recording_set_dev_clean,
                 'supervisions': supervision_set_dev_clean
@@ -113,7 +113,7 @@ def main():
 
     recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
-    supervision_set_eval.to_json(output_dir / f'supervisions_safet_dev.json')
+    supervision_set_dev.to_json(output_dir / f'supervisions_safet_dev.json')
     safet_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
@@ -121,7 +121,7 @@ def main():
 
     recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/train_cleaned', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    supervision_set_eval.to_json(output_dir / f'supervisions_safet_train.json')
+    supervision_set_train.to_json(output_dir / f'supervisions_safet_train.json')
     safet_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
