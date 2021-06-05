@@ -25,7 +25,7 @@ from snowfall.decoding.graph import compile_HLG
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
-from snowfall.models.tdnnf import Tdnnf1a
+#from snowfall.models.tdnnf import Tdnnf1a
 #from snowfall.models.cnn_tdnnf import Tdnnf1a
 #from snowfall.models.cnn_tdnn1b import CnnTdnn1a
 from snowfall.training.ctc_graph import build_ctc_topo
@@ -209,7 +209,7 @@ def get_parser():
 
 def main():
     args = get_parser().parse_args()
-    exp_dir = Path('exp-tdnnf-adam-mmi-bigram')
+    exp_dir = Path('exp-lstm-adam-mmi-bigram-musan-dist-s4')
     setup_logger('{}/log/log-decode'.format(exp_dir), log_level='debug')
 
     # load L, G, symbol_table
@@ -224,12 +224,12 @@ def main():
 
     logging.debug("About to load model")
     device = torch.device('cuda')
-    model = Tdnnf1a(num_features=80,
-                       num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-                       subsampling_factor=3)
-    #model = TdnnLstm1b(num_features=80,
+    #model = Tdnnf1a(num_features=80,
     #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
     #                   subsampling_factor=3)
+    model = TdnnLstm1b(num_features=80,
+                       num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
+                       subsampling_factor=3)
     #model = CnnTdnn1a(num_features=80,
     #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
     #                   subsampling_factor=3)
