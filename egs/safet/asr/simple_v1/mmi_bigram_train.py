@@ -22,7 +22,8 @@ from torch.utils.tensorboard import SummaryWriter
 from typing import Dict, Optional, Tuple, List
 
 from lhotse import CutSet
-from lhotse.dataset import BucketingSampler, CutConcatenate, CutMix, K2SpeechRecognitionDataset, SingleCutSampler
+from lhotse.dataset import BucketingSampler, CutConcatenate, CutMix, K2SpeechRecognitionDataset, SingleCutSampler, \
+    SpecAugment
 from lhotse.utils import fix_random_seed, nullcontext
 from snowfall.common import describe
 from snowfall.common import load_checkpoint, save_checkpoint, str2bool
@@ -297,24 +298,23 @@ def main():
     logging.info("About to get train cuts")
     cuts_train = CutSet.from_json(feature_dir /
                                   'cuts_safet_train.json.gz')
-    logging.info("About to get dev cuts")
-    train = K2SpeechRecognitionDataset(cuts_train)
-    #trandforms = []
-    #transforms = [
-    #                         CutConcatenate(
-    #                             duration_factor=self.args.duration_factor,
-    #                             gap=self.args.gap
-    #                         )
-    #                     ] + transforms
+    #train = K2SpeechRecognitionDataset(cuts_train)
+    transforms = []
+    transforms = [
+                             CutConcatenate(
+                                 duration_factor=1.0,
+                                 gap=1.0
+                             )
+                         ] + transforms
 
-    #input_transforms = [
-    #        SpecAugment(num_frame_masks=2, features_mask_size=27, num_feature_masks=2, frames_mask_size=100)
-    #    ]
-    #train = K2SpeechRecognitionDataset(
-    #        cuts_train,
-    #        cut_transforms=transforms,
-    #        input_transforms=input_transforms
-    #    )
+    input_transforms = [
+            SpecAugment(num_frame_masks=2, features_mask_size=27, num_feature_masks=2, frames_mask_size=100)
+        ]
+    train = K2SpeechRecognitionDataset(
+            cuts_train,
+            cut_transforms=transforms,
+            input_transforms=input_transforms
+        )
     if args.bucketing_sampler:
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
@@ -338,6 +338,7 @@ def main():
         num_workers=1
     )
     logging.info("About to create dev dataset")
+    logging.info("About to get dev cuts")
     cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev_clean.json.gz')
     validate = K2SpeechRecognitionDataset(cuts_dev)
     # Note: we explicitly set world_size to 1 to disable the auto-detection of
