@@ -298,23 +298,23 @@ def main():
     cuts_train = CutSet.from_json(feature_dir /
                                   'cuts_safet_train.json.gz')
     logging.info("About to get dev cuts")
-    #train = K2SpeechRecognitionDataset(cuts_train)
-    trandforms = []
-    transforms = [
-                             CutConcatenate(
-                                 duration_factor=self.args.duration_factor,
-                                 gap=self.args.gap
-                             )
-                         ] + transforms
+    train = K2SpeechRecognitionDataset(cuts_train)
+    #trandforms = []
+    #transforms = [
+    #                         CutConcatenate(
+    #                             duration_factor=self.args.duration_factor,
+    #                             gap=self.args.gap
+    #                         )
+    #                     ] + transforms
 
-    input_transforms = [
-            SpecAugment(num_frame_masks=2, features_mask_size=27, num_feature_masks=2, frames_mask_size=100)
-        ]
-    train = K2SpeechRecognitionDataset(
-            cuts_train,
-            cut_transforms=transforms,
-            input_transforms=input_transforms
-        )
+    #input_transforms = [
+    #        SpecAugment(num_frame_masks=2, features_mask_size=27, num_feature_masks=2, frames_mask_size=100)
+    #    ]
+    #train = K2SpeechRecognitionDataset(
+    #        cuts_train,
+    #        cut_transforms=transforms,
+    #        input_transforms=input_transforms
+    #    )
     if args.bucketing_sampler:
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
