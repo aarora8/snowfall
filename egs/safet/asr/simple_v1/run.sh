@@ -13,7 +13,7 @@ set -eou pipefail
 #Prepare_lang will run after prepare dict
 #Prepare_lm will run after prepare.py
 #Train_lm_srilm will run after prepare_lm
-stage=4
+stage=6
 
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
@@ -50,10 +50,19 @@ if [ $stage -le 3 ]; then
 fi
 
 if [ $stage -le 4 ]; then
-  echo "Stage 4: train nnet model with train and dev clean data direcotries"
+  echo "Stage 4: train lstm model with train and dev clean data direcotries"
   utils/queue.pl --mem 32G --gpu 1 --config conf/coe.conf exp/train_lstm.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train.py
 fi
 if [ $stage -le 5 ]; then
-  echo "Stage 5: decode dev data direcotrie with trained nnet model"
+  echo "Stage 5: decode dev data direcotrie with trained lstm model"
   utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf exp/decode_lstm.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py --epoch 9
+fi
+
+if [ $stage -le 6 ]; then
+  echo "Stage 6: train conformer model with train and dev clean data direcotries"
+  utils/queue.pl --mem 32G --gpu 1 --config conf/coe.conf exp/train_lstm.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_train.py
+fi
+if [ $stage -le 7 ]; then
+  echo "Stage 7: decode dev data direcotrie with trained conformer model"
+  utils/queue.pl --mem 10G --gpu 1 --config conf/coe.conf exp/decode_lstm.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 9
 fi
