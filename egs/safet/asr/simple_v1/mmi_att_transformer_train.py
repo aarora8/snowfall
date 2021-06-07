@@ -32,7 +32,6 @@ from snowfall.common import describe, str2bool
 from snowfall.common import load_checkpoint, save_checkpoint
 from snowfall.common import save_training_info
 from snowfall.common import setup_logger
-#from snowfall.data.librispeech import LibriSpeechAsrDataModule
 from snowfall.data.safet import SafetAsrDataModule
 from snowfall.dist import cleanup_dist
 from snowfall.dist import setup_dist
@@ -300,9 +299,6 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
                 tb_writer.add_scalar('train/current_batch_average_objf',
                                      curr_batch_objf / (curr_batch_frames + 0.001),
                                      global_batch_idx_train)
-            # if batch_idx >= 10:
-            #    print("Exiting early to get profile info")
-            #    sys.exit(0)
 
         if batch_idx > 0 and batch_idx % 200 == 0:
             total_valid_objf, total_valid_frames, total_valid_all_frames = get_validation_objf(
@@ -361,7 +357,7 @@ def get_parser():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=10,
+        default=15,
         help="Number of training epochs.")
     parser.add_argument(
         '--start-epoch',
@@ -481,7 +477,6 @@ def run(rank, world_size, args):
         tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard')
     else:
         tb_writer = None
-    #  tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard') if args.tensorboard and rank == 0 else None
 
     logging.info("Loading lexicon and symbol tables")
     lang_dir = Path('data/lang_nosp')
@@ -502,9 +497,6 @@ def run(rank, world_size, args):
     safetspeech = SafetAsrDataModule(args)
     train_dl = safetspeech.train_dataloaders()
     valid_dl = safetspeech.valid_dataloaders()
-#    librispeech = LibriSpeechAsrDataModule(args)
-#    train_dl = librispeech.train_dataloaders()
-#    valid_dl = librispeech.valid_dataloaders()
 
     if not torch.cuda.is_available():
         logging.error('No GPU detected!')
@@ -568,15 +560,7 @@ def run(rank, world_size, args):
         loaded_dict = checkpoint['state_dict']
         loaded_dict = {key: loaded_dict[key] for key in ali_model.state_dict()}
         ali_model.load_state_dict(loaded_dict)
-        #ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
         ali_model.to(device)
-        #new_state_dict = OrderedDict()
-        #for k, v in loaded_dict.items():
-        #    if k != 'P_scores':
-        #        new_state_dict[k] = v
-        #ali_model.load_state_dict(new_state_dict)
-
-        # ali_model.eval()
         ali_model.requires_grad_(False)
         logging.info(f'Use ali_model: {ali_model_fname}')
     else:
@@ -694,7 +678,6 @@ def run(rank, world_size, args):
 def main():
     parser = get_parser()
     SafetAsrDataModule.add_arguments(parser)
-    # LibriSpeechAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
     world_size = args.world_size
     assert world_size >= 1
