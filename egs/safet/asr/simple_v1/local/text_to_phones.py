@@ -1,36 +1,45 @@
 #!/usr/bin/env python
 
 # Copyright    2017 Hossein Hadian
+# Copyright    2021 Ashish Arora
 # Apache 2.0
 
-
-""" This reads data/train/text from standard input, converts the word transcriptions
-    to phone transcriptions using the provided lexicon,
-    and writes them to standard output.
+""" This reads a text file such as (data/train/text), and converts the word
+    transcriptions to monophone and biphone transcriptions using the 
+    provided lexicon.
 """
 from __future__ import print_function
-
 import argparse
-from os.path import join
-import sys
+import os
 import copy
-import random
 
-# oov_word
-oov_word = open('lang_nosp/oov.txt').readline().strip()
-sil = open('lang_nosp/phones/optional_silence.txt').readline().strip()
-# load the lexicon
+parser = argparse.ArgumentParser(description="""creates left bi-phone lexicon from monophone lexicon""")
+parser.add_argument('oov_word', type=str, help='File name of a file that contains the'
+                    'lexicon with monophones. Each line must be: <word> <phone1> <phone2> ...')
+parser.add_argument('optional_silence', type=str, help='Output file that contains'
+                    'non-silence left bi-phones')
+parser.add_argument('monophone_lexicon', type=str, help='Output file that'
+                    'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
+parser.add_argument('text', type=str, help='Output file that'
+                    'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
+parser.add_argument('output_monotext', type=str, help='Output file that'
+                    'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
+parser.add_argument('output_bitext', type=str, help='Output file that'
+                    'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
+# oov word and silence phone
+oov_word = open(args.oov_word, 'r', encoding='utf8').readline().strip()
+sil_phone = open(args.optional_silence, 'r', encoding='utf8').readline().strip()
 lexicon = dict()
-with open("dict_nosp/lexicon.txt") as f:
+with open(args.monophone_lexicon) as f:
     for line in f:
-        line = line.strip()
-        parts = line.split()
+        parts = line.strip().split()
         lexicon[parts[0]] = parts[1:]
 
-phone_transcription_dict = dict()
-for line in open('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/train_cleaned/text'):
+utt2phonetranscription = dict()
+text_handle = open(args.output_monotext, 'w', encoding='utf8')
+for line in open(args.text):
     line = line.strip().split()
-    key = line[0]
+    uttid = line[0]
     word_trans = line[1:]   # word-level transcription
     phone_trans = []        # phone-level transcription
     for i in range(len(word_trans)):
@@ -40,35 +49,25 @@ for line in open('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/train_
         else:
             pronunciation = copy.deepcopy(lexicon[word])
         phone_trans += pronunciation 
-        phone_trans.append(sil)  
-    phone_transcription_dict[key] = phone_trans
+        phone_trans.append(sil_phone)  
+    utt2phonetranscription[uttid] = phone_trans
+    text_handle.write(uttid + " " + " ".join(phone_trans) + '\n')
 
-
-text_file = join('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/output/text_to_phones.txt')
-text_fh = open(text_file, 'w')
-for key in phone_transcription_dict:
-    text_fh.write(key + " " + " ".join(phone_transcription_dict[key]) + '\n')
-
-biphone_transcription_dict = dict()
-for key in phone_transcription_dict:
+utt2biphonetranscription = dict()
+text_handle = open(args.output_bitext, 'w', encoding='utf8')
+for uttid in utt2phonetranscription:
     prev_phone = '0'
     phone_sequence = []
-    for phone in phone_transcription_dict[key]:
-        if prev_phone == sil or prev_phone == lexicon[oov_word][0]:
+    for phone in utt2phonetranscription[uttid]:
+        if prev_phone == sil_phone or prev_phone == lexicon[oov_word][0]:
             prev_phone = '0'
         new_phone = prev_phone + '_' + phone
         prev_phone = phone
-        if phone == sil:
-            phone_sequence.append(phone)
+        if phone == sil_phone:
+            phone_sequence.append(sil_phone)
         elif phone == lexicon[oov_word][0]:
-            phone_sequence.append(phone)
+            phone_sequence.append(lexicon[oov_word][0])
         else:
             phone_sequence.append(new_phone)            
-    biphone_transcription_dict[key] = phone_sequence
-
-text_file = join('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/output/text_to_biphones.txt')
-text_fh = open(text_file, 'w')
-for key in biphone_transcription_dict:
-    # print(biphone_transcription_dict[key])
-    text_fh.write(key + " " + " ".join(biphone_transcription_dict[key]) + '\n')
-        
+    utt2biphonetranscription[uttid] = phone_sequence
+    text_handle.write(uttid + " " + " ".join(phone_trans) + '\n')
