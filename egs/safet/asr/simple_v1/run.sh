@@ -13,7 +13,7 @@ set -eou pipefail
 #Prepare_lang will run after prepare dict
 #Prepare_lm will run after prepare.py
 #Train_lm_srilm will run after prepare_lm
-stage=6
+stage=1
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
   utils/queue.pl --mem 32G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
@@ -23,7 +23,7 @@ if [ $stage -le 1 ]; then
   echo "Stage 1: Create lexicon similar to librispeech"
   local/prepare_dict.sh
 fi
-
+exit
 if [ $stage -le 2 ]; then
   echo "Stage 2: Create the data/lang_nosp directory that has a specific HMM topolopy"
   local/prepare_lang.sh \

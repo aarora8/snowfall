@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 import os
 import argparse
 parser = argparse.ArgumentParser(description="""creates left bi-phone lexicon from monophone lexicon""")
@@ -6,35 +7,38 @@ parser.add_argument('lexicon', type=str, help='File name of a file that contains
                     'lexicon with monophones. Each line must be: <word> <phone1> <phone2> ...')
 parser.add_argument('nonsilence_biphones', type=str, help='Output file that contains'
                     'non-silence left bi-phones')
-parser.add_argument('biphone_lexicon', type=str, default='-', help='Output file that'
+parser.add_argument('biphone_lexicon', type=str, help='Output file that'
                     'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
-args = parser.parse_args()
 
 def main():
 
+    args = parser.parse_args()
     word2monophones = dict()
     lexicon_handle = open(args.lexicon, 'r', encoding='utf8')
     lexicon_data = lexicon_handle.read().strip().split("\n")
     for line in lexicon_data:
         parts = line.strip().split()
-        word2monophones[parts[0]]=parts[1:]
+        if parts[0] not in word2monophones:
+            word2monophones[parts[0]] = list()
+        word2monophones[parts[0]].append(parts[1:])
 
     output_nonsilbiphones_handle = open(args.nonsilence_biphones, 'w', encoding='utf8')
     output_biphone_lexicon_handle = open(args.biphone_lexicon, 'w', encoding='utf8')
     nonsilbiphones_dict = dict()
     for word in word2monophones:
-        prev_phone = '0'
-        phone_sequence = []
-        for phone in word2monophones[word]:
-            new_phone = prev_phone + '_' + phone
-            if new_phone not in nonsilbiphones_dict:
-                nonsilbiphones_dict[new_phone] = new_phone
-                output_nonsilbiphones_handle.write(new_phone + '\n')
-            phone_sequence.append(new_phone)
-            prev_phone = phone
-        phone_sequence = ' '.join(phone_sequence)
-        pronunciation = word + ' ' + phone_sequence
-        output_biphone_lexicon_handle.write(pronunciation + '\n')
+        for mono_pronunciation in word2monophones[word]:
+            prev_phone = '0'
+            phone_sequence = []
+            for phone in mono_pronunciation:
+                new_phone = prev_phone + '_' + phone
+                if new_phone not in nonsilbiphones_dict:
+                    nonsilbiphones_dict[new_phone] = new_phone
+                    output_nonsilbiphones_handle.write(new_phone + '\n')
+                phone_sequence.append(new_phone)
+                prev_phone = phone
+            phone_sequence = ' '.join(phone_sequence)
+            pronunciation = word + ' ' + phone_sequence
+            output_biphone_lexicon_handle.write(pronunciation + '\n')
 
 
 if __name__ == '__main__':
