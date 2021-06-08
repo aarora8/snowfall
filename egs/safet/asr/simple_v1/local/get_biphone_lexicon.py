@@ -1,41 +1,41 @@
 #!/usr/bin/env python
 import os
-
-
-def get_lexicon_details():
-    # AMI_ES2011a_H00 1113.845
-    # <reco-id> <dur>
-    # AMI_ES2011a_H00_FEE041_0003427_0003714 AMI_ES2011a_H00 34.27 37.14
-    # <utt-id> <reco-id> <seg-beg> <seg-end>
-    lexicon_dict= dict()
-    for line in open('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/dict_nosp/lexicon.txt'):
-        parts = line.strip().split()
-        word = parts[0]
-        lexicon_dict[parts[0]]=parts[1:]
-    return lexicon_dict
-
+import argparse
+parser = argparse.ArgumentParser(description="""creates left bi-phone lexicon from monophone lexicon""")
+parser.add_argument('lexicon', type=str, help='File name of a file that contains the'
+                    'lexicon with monophones. Each line must be: <word> <phone1> <phone2> ...')
+parser.add_argument('nonsilence_biphones', type=str, help='Output file that contains'
+                    'non-silence left bi-phones')
+parser.add_argument('biphone_lexicon', type=str, default='-', help='Output file that'
+                    'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
+args = parser.parse_args()
 
 def main():
-    lexicon_dict = get_lexicon_details()
-    non_silphone_dict = dict()
-    text_file = os.path.join('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/output/bilexicon.txt')
-    text_fh = open(text_file, 'w')
-    nsp_text_file = os.path.join('/Users/ashisharora/Desktop/corpora/kaldi_data_safet/e2e/output/nonsilence_phones.txt')
-    nsp_text_fh = open(nsp_text_file, 'w')
-    for key in lexicon_dict:
+
+    word2monophones = dict()
+    lexicon_handle = open(args.lexicon, 'r', encoding='utf8')
+    lexicon_data = lexicon_handle.read().strip().split("\n")
+    for line in lexicon_data:
+        parts = line.strip().split()
+        word2monophones[parts[0]]=parts[1:]
+
+    output_nonsilbiphones_handle = open(args.nonsilence_biphones, 'w', encoding='utf8')
+    output_biphone_lexicon_handle = open(args.biphone_lexicon, 'w', encoding='utf8')
+    nonsilbiphones_dict = dict()
+    for word in word2monophones:
         prev_phone = '0'
         phone_sequence = []
-        for phone in lexicon_dict[key]:
+        for phone in word2monophones[word]:
             new_phone = prev_phone + '_' + phone
-            if new_phone not in non_silphone_dict:
-                non_silphone_dict[new_phone] = new_phone
-                nsp_text_fh.write(new_phone + '\n')
+            if new_phone not in nonsilbiphones_dict:
+                nonsilbiphones_dict[new_phone] = new_phone
+                output_nonsilbiphones_handle.write(new_phone + '\n')
             phone_sequence.append(new_phone)
             prev_phone = phone
         phone_sequence = ' '.join(phone_sequence)
-        pronunciation = key + ' ' + phone_sequence
-        text_fh.write(pronunciation + '\n')
-    
+        pronunciation = word + ' ' + phone_sequence
+        output_biphone_lexicon_handle.write(pronunciation + '\n')
+
 
 if __name__ == '__main__':
     main()
