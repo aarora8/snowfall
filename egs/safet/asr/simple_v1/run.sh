@@ -13,15 +13,24 @@ set -eou pipefail
 #Prepare_lang will run after prepare dict
 #Prepare_lm will run after prepare.py
 #Train_lm_srilm will run after prepare_lm
-stage=1
+stage=0
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
   utils/queue.pl --mem 32G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
+  local/prepare_lm.py
 fi
 
 if [ $stage -le 1 ]; then
   echo "Stage 1: Create lexicon similar to librispeech"
+  dst_dir=data/local/dict_nosp
   local/prepare_dict.sh
+  local/text_to_phones.py $dst_dir/oov_word.txt $dst_dir/optional_silence.txt \
+    $dst_dir/lexicon/lexicon_raw_nosil.txt exp/data/lm_train_text \
+    exp/data/lm_train_monotext exp/data/lm_train_bitext
+
+  local/replace_biphone_with_monophone_from_lexicon.py exp/data/lm_train_bitext \
+    $dst_dir/lexicon/lexicon_biphones_nosil.txt
+    $dst_dir/lexicon/lexicon_monobiphones_nosil.txt
 fi
 exit
 if [ $stage -le 2 ]; then
@@ -35,7 +44,6 @@ fi
 
 if [ $stage -le 3 ]; then
   echo "Stage 3: Create lm from train and dev clean text"
-  local/prepare_lm.py
   local/train_lm_srilm.sh
   gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
 

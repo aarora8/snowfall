@@ -5,7 +5,7 @@
 # Apache 2.0
 
 """ This reads a text file such as (data/train/text), and converts the word
-    transcriptions to monophone and biphone transcriptions using the 
+    transcriptions to monophone and biphone transcriptions using the
     provided lexicon.
 """
 from __future__ import print_function
@@ -48,8 +48,8 @@ for line in open(args.text):
             pronunciation = lexicon[oov_word]
         else:
             pronunciation = copy.deepcopy(lexicon[word])
-        phone_trans += pronunciation 
-        phone_trans.append(sil_phone)  
+        phone_trans += pronunciation
+        phone_trans.append(sil_phone)
     utt2phonetranscription[uttid] = phone_trans
     text_handle.write(uttid + " " + " ".join(phone_trans) + '\n')
 
@@ -68,6 +68,6 @@ for uttid in utt2phonetranscription:
         elif phone == lexicon[oov_word][0]:
             phone_sequence.append(lexicon[oov_word][0])
         else:
-            phone_sequence.append(new_phone)            
+            phone_sequence.append(new_phone)
     utt2biphonetranscription[uttid] = phone_sequence
     text_handle.write(uttid + " " + " ".join(phone_trans) + '\n')
