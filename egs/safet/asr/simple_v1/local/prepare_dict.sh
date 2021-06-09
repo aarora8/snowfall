@@ -22,16 +22,16 @@ awk '{for (i=2; i<=NF; ++i) { print $i; gsub(/[0-9]/, "", $i); print $i}}' $lexi
     $phones_of{$1} .= "$_ "; }
     foreach $list (values %phones_of) {print $list . "\n"; } ' | sort \
     > $nonsil_monophones || exit 1;
-
 local/get_biphone_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
-
 
 echo "Preparing phone lists"
 (echo SIL; echo SPN;) > $silence_phones
 echo SIL > $optional_silence
 echo '<UNK> SPN' > $oov_word_phone
-cat $nonsil_biphones $nonsil_monophones | sort > $nonsil_phones
 
+
+
+cat $nonsil_biphones $nonsil_monophones | sort > $nonsil_phones
 (echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<UNK> SPN'; ) |\
 cat - $lexicon_biphones_nosil $lexicon_monophones_nosil | sort | uniq >$dst_dir/lexicon.txt
 echo "Lexicon text file saved as: $dst_dir/lexicon.txt"
