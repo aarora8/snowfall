@@ -7,7 +7,7 @@ nonsil_phones=$dst_dir/nonsilence_phones.txt
 nonsil_biphones=$dst_dir/nonsilence_biphones.txt
 lexicon_raw_nosil=$dst_dir/lexicon/lexicon_raw_nosil.txt
 lexicon_biphones_nosil=$dst_dir/lexicon/lexicon_biphones_nosil.txt
-oov_word=$dst_dir/oov_word.txt
+oov_word_phone=$dst_dir/oov_text.txt
 mkdir -p $dst_dir/lexicon
 wget -P $dst_dir/lexicon/ https://www.openslr.org/resources/11/librispeech-lexicon.txt
 cat $dst_dir/lexicon/librispeech-lexicon.txt  | \
@@ -19,7 +19,7 @@ echo "Preparing phone lists"
 (echo SIL; echo SPN;) > $silence_phones
 echo SIL > $optional_silence
 cat $nonsil_biphones | sort > $nonsil_phones
-echo '<UNK>' > $oov_word
+echo '<UNK> SPN' > $oov_word_phone
 
 #awk '{for (i=2; i<=NF; ++i) { print $i; gsub(/[0-9]/, "", $i); print $i}}' $lexicon_raw_nosil |\
 #  sort -u |\

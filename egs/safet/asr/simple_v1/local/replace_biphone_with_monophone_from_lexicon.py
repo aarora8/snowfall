@@ -3,11 +3,11 @@
 import os
 import argparse
 parser = argparse.ArgumentParser(description="""creates left bi-phone lexicon from monophone lexicon""")
-parser.add_argument('lexicon', type=str, help='File name of a file that contains the'
+parser.add_argument('bitext', type=str, help='File name of a file that contains the'
                     'lexicon with monophones. Each line must be: <word> <phone1> <phone2> ...')
-parser.add_argument('nonsilence_biphones', type=str, help='Output file that contains'
+parser.add_argument('bilexicon', type=str, help='Output file that contains'
                     'non-silence left bi-phones')
-parser.add_argument('biphone_lexicon', type=str, help='Output file that'
+parser.add_argument('output_monobi_lexicon', type=str, help='Output file that'
                     'contains left bi-phone lexicon. Each line must be: <word> <biphone1> <biphone2> ...')
 
 def main():
