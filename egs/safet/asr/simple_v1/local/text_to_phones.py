@@ -63,7 +63,7 @@ for line in phonetranscription:
     for phone in line:
         if prev_phone == sil_phone or prev_phone == oov_phone:
             prev_phone = ''
-        if not prev_phone:
+        if prev_phone:
             new_phone = prev_phone + '_' + phone
         else:
             new_phone = phone

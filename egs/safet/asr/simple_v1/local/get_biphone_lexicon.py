@@ -30,7 +30,7 @@ def main():
             prev_phone = ''
             phone_sequence = []
             for phone in mono_pronunciation:
-                if not prev_phone:
+                if prev_phone:
                     new_phone = prev_phone + '_' + phone
                 else:
                     new_phone = phone

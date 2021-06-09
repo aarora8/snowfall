@@ -30,8 +30,11 @@ def main():
         word2biphone[word] = list()
         for biphone in word_biphone[1:]:
             if biphone not in biphone_train_count:
-                monophone = biphone.split('_')[1]
-                word2biphone[word].append(monophone)
+                if '_' in biphone:
+                    monophone = biphone.split('_')[1]
+                    word2biphone[word].append(monophone)
+                else:
+                    word2biphone[word].append(biphone)
             else:
                word2biphone[word].append(biphone)
         text_handle.write(word + " " + " ".join(word2biphone[word]) + '\n')
