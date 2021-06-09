@@ -26,6 +26,7 @@ fi
 if [ $stage -le 2 ]; then
   echo "Stage 2: Create the data/lang_nosp directory that has a specific HMM topolopy"
   local/prepare_lang.sh \
+    --position-dependent-phones false \
     data/local/dict_nosp \
     "<UNK>" \
     data/local/lang_tmp_nosp \
