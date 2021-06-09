@@ -47,7 +47,7 @@ for line in open(args.text):
     for i in range(len(word_trans)):
         word = word_trans[i]
         if word not in lexicon:
-            pronunciation = oov_phone
+            pronunciation = list(oov_phone.split(" "))
         else:
             pronunciation = copy.deepcopy(lexicon[word])
         phone_trans += pronunciation
@@ -59,17 +59,18 @@ biphonetranscription = list()
 text_handle = open(args.output_bitext, 'w', encoding='utf8')
 for line in phonetranscription:
     prev_phone = '0'
-    phone_sequence = []
+    biphone_trans = []
     for phone in line:
         if prev_phone == sil_phone or prev_phone == oov_phone:
             prev_phone = '0'
         new_phone = prev_phone + '_' + phone
         prev_phone = phone
         if phone == sil_phone:
-            phone_sequence.append(sil_phone)
+            biphone_trans.append(sil_phone)
         elif phone == oov_phone:
-            phone_sequence.append(oov_phone)
+            biphone_trans.append(oov_phone)
         else:
-            phone_sequence.append(new_phone)
-    biphonetranscription.append(phone_sequence)
-    text_handle.write(" ".join(phone_trans) + '\n')
+            biphone_trans.append(new_phone)
+
+    biphonetranscription.append(biphone_trans)
+    text_handle.write(" ".join(biphone_trans) + '\n')

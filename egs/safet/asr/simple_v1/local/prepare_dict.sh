@@ -23,7 +23,7 @@ awk '{for (i=2; i<=NF; ++i) { print $i; gsub(/[0-9]/, "", $i); print $i}}' $lexi
     foreach $list (values %phones_of) {print $list . "\n"; } ' | sort \
     > $nonsil_monophones || exit 1;
 
-local/get_biphone_lexicon.py $lexicon_raw_nosil $nonsil_biphones $lexicon_biphones_nosil
+local/get_biphone_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
 
 
 echo "Preparing phone lists"
