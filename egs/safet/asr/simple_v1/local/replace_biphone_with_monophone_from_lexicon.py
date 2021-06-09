@@ -24,19 +24,18 @@ def main():
     biphone_handle = open(args.bilexicon, 'r', encoding='utf8')
     biphones_lexicon = biphone_handle.read().strip().split("\n")
     word2biphone = dict()
-    for key_val in biphones_lexicon:
-        key_val = key_val.strip().split(" ")
-        word = key_val[0]
+    for word_biphone in biphones_lexicon:
+        word_biphone = word_biphone.strip().split(" ")
+        word = word_biphone[0]
         word2biphone[word] = list()
-        for biphone in key_val[1:]:
+        for biphone in word_biphone[1:]:
             if biphone not in biphone_train_count:
                 monophone = biphone.split('_')[1]
                 word2biphone[word].append(monophone)
             else:
                word2biphone[word].append(biphone)
-
-    for word in word2biphone:
         text_handle.write(word + " " + " ".join(word2biphone[word]) + '\n')
+
 
 if __name__ == '__main__':
     main()
