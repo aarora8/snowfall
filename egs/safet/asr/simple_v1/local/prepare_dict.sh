@@ -49,6 +49,8 @@ local/replace_biphone_with_monophone_from_lexicon.py exp/data/lm_train_bitext \
 cat  $lexicon_monophones_nosil $dst_dir/lexicon/lexicon_monobiphones_nosil.txt |\
   sort | uniq > $dst_dir/lexicon/lexicon_nonsil_combined.txt
 # get non-silence phones from this lexicon
+# Note: non-silence phones can be less than non-silence biphones, since some of the biphones
+# are not present in the training data
 local/get_phones_from_lexicon.py $dst_dir/lexicon/lexicon_nonsil_combined.txt $nonsil_phones
 
 
