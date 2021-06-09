@@ -13,7 +13,7 @@ set -eou pipefail
 #Prepare_lang will run after prepare dict
 #Prepare_lm will run after prepare.py
 #Train_lm_srilm will run after prepare_lm
-stage=1
+stage=0
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
   utils/queue.pl --mem 32G --config conf/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
