@@ -38,13 +38,12 @@ with open(args.monophone_lexicon) as f:
         parts = line.strip().split()
         lexicon[parts[0]] = parts[1:]
 
-utt2phonetranscription = dict()
+phonetranscription = list()
 text_handle = open(args.output_monotext, 'w', encoding='utf8')
 for line in open(args.text):
     line = line.strip().split()
-    uttid = line[0]
-    word_trans = line[1:]   # word-level transcription
-    phone_trans = []        # phone-level transcription
+    word_trans = line   # word-level transcription
+    phone_trans = []    # phone-level transcription
     for i in range(len(word_trans)):
         word = word_trans[i]
         if word not in lexicon:
@@ -53,15 +52,15 @@ for line in open(args.text):
             pronunciation = copy.deepcopy(lexicon[word])
         phone_trans += pronunciation
         phone_trans.append(sil_phone)
-    utt2phonetranscription[uttid] = phone_trans
-    text_handle.write(uttid + " " + " ".join(phone_trans) + '\n')
+    phonetranscription.append(phone_trans)
+    text_handle.write(" ".join(phone_trans) + '\n')
 
-utt2biphonetranscription = dict()
+biphonetranscription = dict()
 text_handle = open(args.output_bitext, 'w', encoding='utf8')
-for uttid in utt2phonetranscription:
+for line in phonetranscription:
     prev_phone = '0'
     phone_sequence = []
-    for phone in utt2phonetranscription[uttid]:
+    for phone in line:
         if prev_phone == sil_phone or prev_phone == oov_phone:
             prev_phone = '0'
         new_phone = prev_phone + '_' + phone
@@ -72,5 +71,5 @@ for uttid in utt2phonetranscription:
             phone_sequence.append(oov_phone)
         else:
             phone_sequence.append(new_phone)
-    utt2biphonetranscription[uttid] = phone_sequence
-    text_handle.write(uttid + " " + " ".join(phone_trans) + '\n')
+    biphonetranscription.append(phone_sequence)
+    text_handle.write(" ".join(phone_trans) + '\n')
