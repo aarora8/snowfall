@@ -27,10 +27,13 @@ def main():
     nonsilbiphones_dict = dict()
     for word in word2monophones:
         for mono_pronunciation in word2monophones[word]:
-            prev_phone = '0'
+            prev_phone = ''
             phone_sequence = []
             for phone in mono_pronunciation:
-                new_phone = prev_phone + '_' + phone
+                if not prev_phone:
+                    new_phone = prev_phone + '_' + phone
+                else:
+                    new_phone = phone
                 if new_phone not in nonsilbiphones_dict:
                     nonsilbiphones_dict[new_phone] = new_phone
                     output_nonsilbiphones_handle.write(new_phone + '\n')

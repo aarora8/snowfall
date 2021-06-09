@@ -58,12 +58,15 @@ for line in open(args.text):
 biphonetranscription = list()
 text_handle = open(args.output_bitext, 'w', encoding='utf8')
 for line in phonetranscription:
-    prev_phone = '0'
+    prev_phone = ''
     biphone_trans = []
     for phone in line:
         if prev_phone == sil_phone or prev_phone == oov_phone:
-            prev_phone = '0'
-        new_phone = prev_phone + '_' + phone
+            prev_phone = ''
+        if not prev_phone:
+            new_phone = prev_phone + '_' + phone
+        else:
+            new_phone = phone
         prev_phone = phone
         if phone == sil_phone:
             biphone_trans.append(sil_phone)
