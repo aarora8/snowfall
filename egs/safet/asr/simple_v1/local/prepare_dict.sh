@@ -18,20 +18,14 @@ cat $dst_dir/lexicon/librispeech-lexicon.txt  | \
   perl -ne '($a, $b) = split " ", $_, 2; $b =~ s/[0-9]//g; print "$a $b";' > $lexicon_monophones_nosil
 
 
-# get non-silence monophones
-awk '{for (i=2; i<=NF; ++i) { print $i; gsub(/[0-9]/, "", $i); print $i}}' $lexicon_monophones_nosil |\
-  sort -u |\
-  perl -e 'while(<>){
-    chop; m:^([^\d]+)(\d*)$: || die "Bad phone $_";
-    $phones_of{$1} .= "$_ "; }
-    foreach $list (values %phones_of) {print $list . "\n"; } ' | sort \
-    > $nonsil_monophones || exit 1;
-
-
 # Preparing phone lists
 (echo SIL; echo SPN;) > $silence_phones
 echo SIL > $optional_silence
 echo '<UNK> SPN' > $oov_word_phone
+
+
+# get non-silence monophones
+local/get_phones_from_lexicon.py $lexicon_monophones_nosil $nonsil_monophones
 
 
 # create biphone lexicon from monophone lexicon
@@ -58,8 +52,10 @@ cat  $lexicon_monophones_nosil $dst_dir/lexicon/lexicon_monobiphones_nosil.txt \
 local/get_phones_from_lexicon.py $dst_dir/lexicon/lexicon_nonsil_combined.txt $nonsil_phones
 
 
+# add silence and oov words and phones to the lexicon to get final lexicon
 (echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<UNK> SPN'; ) |\
 cat - $dst_dir/lexicon/lexicon_nonsil_combined.txt | sort | uniq > $dst_dir/lexicon.txt
+
 
 echo "Lexicon text file saved as: $dst_dir/lexicon.txt"
 exit 0
