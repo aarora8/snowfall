@@ -37,10 +37,12 @@ echo '<UNK> SPN' > $oov_word_phone
 # create biphone lexicon from monophone lexicon
 local/get_biphone_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
 
+
 # convert text to monophone text and biphone text
 local/text_to_phones.py $dst_dir/oov_text.txt $dst_dir/optional_silence.txt \
     $dst_dir/lexicon/lexicon_monophones_nosil.txt exp/data/lm_train_text \
     exp/data/lm_train_monotext exp/data/lm_train_bitext
+
 
 # replace biphones in the biphone lexicon which do not occur 
 # in the biphone training text with monophones 
@@ -49,10 +51,15 @@ local/text_to_phones.py $dst_dir/oov_text.txt $dst_dir/optional_silence.txt \
     $dst_dir/lexicon/lexicon_monobiphones_nosil.txt
 
 
-# combine biphones and monophones to get nonsilence phones
-cat $nonsil_biphones $nonsil_monophones | sort > $nonsil_phones
-(echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<UNK> SPN'; ) |\
-cat - $lexicon_monophones_nosil $dst_dir/lexicon/lexicon_monobiphones_nosil.txt | sort | uniq > $dst_dir/lexicon.txt
-echo "Lexicon text file saved as: $dst_dir/lexicon.txt"
+# get non-silence phones from $lexicon_monophones_nosil
+# $dst_dir/lexicon/lexicon_monobiphones_nosil.txt
+cat  $lexicon_monophones_nosil $dst_dir/lexicon/lexicon_monobiphones_nosil.txt \
+  > $dst_dir/lexicon/lexicon_nonsil_combined.txt
+local/get_phones_from_lexicon.py $dst_dir/lexicon/lexicon_nonsil_combined.txt $nonsil_phones
 
+
+(echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<UNK> SPN'; ) |\
+cat - $dst_dir/lexicon/lexicon_nonsil_combined.txt | sort | uniq > $dst_dir/lexicon.txt
+
+echo "Lexicon text file saved as: $dst_dir/lexicon.txt"
 exit 0

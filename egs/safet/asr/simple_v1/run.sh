@@ -9,10 +9,10 @@ set -eou pipefail
 . ./path.sh
 # ./run.sh | tee local2/logfile/run_logfile.txt
 #prepare.py is independent
-#prepare_dict is independent
+#prepare_dict will run after prepare.py
 #prepare_lang will run after prepare dict
 #train_lm_srilm will run after prepare.py
-stage=0
+stage=1
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
   utils/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
@@ -22,7 +22,7 @@ if [ $stage -le 1 ]; then
   echo "Stage 1: Create lexicon similar to librispeech"
   local/prepare_dict.sh
 fi
-
+exit
 if [ $stage -le 2 ]; then
   echo "Stage 2: Create the data/lang_nosp directory that has a specific HMM topolopy"
   local/prepare_lang.sh \
