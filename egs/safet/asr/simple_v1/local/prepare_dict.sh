@@ -9,12 +9,16 @@ nonsil_phones=$dst_dir/nonsilence_phones.txt
 lexicon_monophones_nosil=$dst_dir/lexicon/lexicon_monophones_nosil.txt
 lexicon_biphones_nosil=$dst_dir/lexicon/lexicon_biphones_nosil.txt
 oov_word_phone=$dst_dir/oov_text.txt
+
+
+# get mono-phone lexicon from librispeech lexicon
 mkdir -p $dst_dir/lexicon
 wget -P $dst_dir/lexicon/ https://www.openslr.org/resources/11/librispeech-lexicon.txt
-
 cat $dst_dir/lexicon/librispeech-lexicon.txt  | \
   perl -ne '($a, $b) = split " ", $_, 2; $b =~ s/[0-9]//g; print "$a $b";' > $lexicon_monophones_nosil
 
+
+# get non-silence monophones
 awk '{for (i=2; i<=NF; ++i) { print $i; gsub(/[0-9]/, "", $i); print $i}}' $lexicon_monophones_nosil |\
   sort -u |\
   perl -e 'while(<>){
@@ -22,18 +26,33 @@ awk '{for (i=2; i<=NF; ++i) { print $i; gsub(/[0-9]/, "", $i); print $i}}' $lexi
     $phones_of{$1} .= "$_ "; }
     foreach $list (values %phones_of) {print $list . "\n"; } ' | sort \
     > $nonsil_monophones || exit 1;
-local/get_biphone_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
 
-echo "Preparing phone lists"
+
+# Preparing phone lists
 (echo SIL; echo SPN;) > $silence_phones
 echo SIL > $optional_silence
 echo '<UNK> SPN' > $oov_word_phone
 
 
+# create biphone lexicon from monophone lexicon
+local/get_biphone_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
 
+# convert text to monophone text and biphone text
+local/text_to_phones.py $dst_dir/oov_text.txt $dst_dir/optional_silence.txt \
+    $dst_dir/lexicon/lexicon_monophones_nosil.txt exp/data/lm_train_text \
+    exp/data/lm_train_monotext exp/data/lm_train_bitext
+
+# replace biphones in the biphone lexicon which do not occur 
+# in the biphone training text with monophones 
+  local/replace_biphone_with_monophone_from_lexicon.py exp/data/lm_train_bitext \
+    $dst_dir/lexicon/lexicon_biphones_nosil.txt \
+    $dst_dir/lexicon/lexicon_monobiphones_nosil.txt
+
+
+# combine biphones and monophones to get nonsilence phones
 cat $nonsil_biphones $nonsil_monophones | sort > $nonsil_phones
 (echo '!SIL SIL'; echo '<SPOKEN_NOISE> SPN'; echo '<UNK> SPN'; ) |\
-cat - $lexicon_biphones_nosil $lexicon_monophones_nosil | sort | uniq >$dst_dir/lexicon.txt
+cat - $lexicon_monophones_nosil $dst_dir/lexicon/lexicon_monobiphones_nosil.txt | sort | uniq > $dst_dir/lexicon.txt
 echo "Lexicon text file saved as: $dst_dir/lexicon.txt"
 
 exit 0

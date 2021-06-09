@@ -13,7 +13,8 @@ from collections import defaultdict
 import torch
 import lhotse
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
-from lhotse.recipes import prepare_librispeech, prepare_safet, prepare_musan
+from lhotse import load_manifest
+from lhotse.recipes import prepare_safet, prepare_musan
 from lhotse.utils import fastcopy
 from lhotse import validate_recordings_and_supervisions
 from lhotse.audio import Recording, RecordingSet
@@ -126,6 +127,16 @@ def main():
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
             }
+
+    sups = load_manifest('exp/data/supervisions_safet_train.json')
+    f = open('exp/data/lm_train_text', 'w')
+    for s in sups:
+        print(s.text, file=f)
+
+    sups = load_manifest('exp/data/supervisions_safet_dev_clean.json')
+    f = open('exp/data/lm_dev_text', 'w')
+    for s in sups:
+        print(s.text, file=f)
 
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
