@@ -55,7 +55,7 @@ for line in open(args.text):
     phonetranscription.append(phone_trans)
     text_handle.write(" ".join(phone_trans) + '\n')
 
-biphonetranscription = dict()
+biphonetranscription = list()
 text_handle = open(args.output_bitext, 'w', encoding='utf8')
 for line in phonetranscription:
     prev_phone = '0'
