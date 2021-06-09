@@ -298,28 +298,12 @@ def main():
     logging.info("About to get train cuts")
     cuts_train = CutSet.from_json(feature_dir /
                                   'cuts_safet_train.json.gz')
-    #train = K2SpeechRecognitionDataset(cuts_train)
-    transforms = []
-    transforms = [
-                             CutConcatenate(
-                                 duration_factor=1.0,
-                                 gap=1.0
-                             )
-                         ] + transforms
-
-    input_transforms = [
-            SpecAugment(num_frame_masks=2, features_mask_size=27, num_feature_masks=2, frames_mask_size=100)
-        ]
-    train = K2SpeechRecognitionDataset(
-            cuts_train,
-            cut_transforms=transforms,
-            input_transforms=input_transforms
-        )
+    train = K2SpeechRecognitionDataset(cuts_train)
     if args.bucketing_sampler:
         logging.info('Using BucketingSampler.')
         train_sampler = BucketingSampler(
             cuts_train,
-            max_frames=10000,
+            max_frames=1000,
             shuffle=True,
             num_buckets=30
         )
@@ -327,7 +311,7 @@ def main():
         logging.info('Using regular sampler with cut concatenation.')
         train_sampler = SingleCutSampler(
             cuts_train,
-            max_frames=10000,
+            max_frames=1000,
             shuffle=True,
         )
     logging.info("About to create train dataloader")
@@ -341,14 +325,7 @@ def main():
     logging.info("About to get dev cuts")
     cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev_clean.json.gz')
     validate = K2SpeechRecognitionDataset(cuts_dev)
-    # Note: we explicitly set world_size to 1 to disable the auto-detection of
-    #       distributed training inside the sampler. This way, every GPU will
-    #       perform the computation on the full dev set. It is a bit wasteful,
-    #       but unfortunately loss aggregation between multiple processes with
-    #       torch.distributed.all_reduce() tends to hang indefinitely inside
-    #       NCCL after ~3000 steps. With the current approach, we can still report
-    #       the loss on the full validation set.
-    valid_sampler = SingleCutSampler(cuts_dev, max_frames=10000, world_size=1, rank=0)
+    valid_sampler = SingleCutSampler(cuts_dev, max_frames=1000, world_size=1, rank=0)
     logging.info("About to create dev dataloader")
     valid_dl = torch.utils.data.DataLoader(
         validate,
@@ -379,9 +356,6 @@ def main():
         optimizer = optim.AdamW(model.parameters(),
                                 lr=learning_rate,
                                 weight_decay=weight_decay)
-        # Equivalent to the following in the epoch loop:
-        #  if epoch > 6:
-        #      curr_learning_rate *= 0.8
         lr_scheduler = optim.lr_scheduler.LambdaLR(
             optimizer,
             lambda ep: 1.0 if ep < 7 else 0.8 ** (ep - 6)
@@ -423,8 +397,6 @@ def main():
                      'only the batches seen in the master process (the actual loss '
                      'includes batches from all GPUs, and the actual num_frames is '
                      f'approx. {args.world_size}x larger.')
-        # For now do not sync BatchNorm across GPUs due to NCCL hanging in all_gather...
-        # model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DDP(model, device_ids=[args.local_rank], output_device=args.local_rank)
 
     for epoch in range(start_epoch, num_epochs):
