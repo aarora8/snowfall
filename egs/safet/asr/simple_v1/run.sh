@@ -61,5 +61,5 @@ if [ $stage -le 6 ]; then
 fi
 if [ $stage -le 7 ]; then
   echo "Stage 7: decode dev data directory with trained conformer model"
-  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_25.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 25
+  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_25.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 30
 fi

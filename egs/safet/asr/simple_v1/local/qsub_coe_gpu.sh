@@ -3,7 +3,7 @@
 #$ -q gpu.q@@v100 -l gpu=1
 #$ -wd /home/hltcoe/aarora/snowfall/egs/safet/asr/simple_v1/
 #$ -V
-#$ -N train_job
+#$ -N decode_job
 #$ -j y -o $JOB_NAME-$JOB_ID.out
 #$ -M ashish.arora.88888@gmail.com
 #$ -m bea
@@ -29,7 +29,7 @@ echo "$0: Started at `date`"
 echo "$0: Running the job on GPU(s) $CUDA_VISIBLE_DEVICES"
 "$@"
 
-/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_att_transformer_train.py
+/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 30
 #bash run.sh
 
 echo "$0: ended at `date`"
