@@ -24,7 +24,6 @@ from snowfall.common import write_error_stats
 from snowfall.common import load_checkpoint
 from snowfall.common import setup_logger
 from snowfall.common import str2bool
-#from snowfall.data import LibriSpeechAsrDataModule
 from snowfall.data.safet import SafetAsrDataModule
 from snowfall.decoding.graph import compile_HLG
 from snowfall.decoding.lm_rescore import decode_with_lm_rescoring
@@ -126,8 +125,6 @@ def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
         # assert HLG.is_cuda()
         assert HLG.device == nnet_output.device, \
             f"Check failed: HLG.device ({HLG.device}) == nnet_output.device ({nnet_output.device})"
-        # TODO(haowen): with a small `beam`, we may get empty `target_graph`,
-        # thus `tot_scores` will be `inf`. Definitely we need to handle this later.
         lattices = k2.intersect_dense_pruned(HLG, dense_fsa_vec, 20.0, output_beam_size, 30,
                                              10000)
 
@@ -238,7 +235,7 @@ def get_parser():
     parser.add_argument(
         '--avg',
         type=int,
-        default=5,
+        default=20,
         help="Number of checkpionts to average. Automaticly select "
              "consecutive checkpoints before checkpoint specified by'--epoch'. ")
     parser.add_argument(
@@ -282,7 +279,6 @@ def get_parser():
 
 def main():
     parser = get_parser()
-    #LibriSpeechAsrDataModule.add_arguments(parser)
     SafetAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
 
@@ -317,8 +313,6 @@ def main():
     ctc_topo = k2.arc_sort(build_ctc_topo(phone_ids_with_blank))
 
     logging.debug("About to load model")
-    # Note: Use "export CUDA_VISIBLE_DEVICES=N" to setup device id to N
-    # device = torch.device('cuda', 1)
     device = torch.device('cuda')
 
     if att_rate != 0.0:
@@ -403,8 +397,6 @@ def main():
         HLG.lm_scores = HLG.scores.clone()
 
     # load dataset
-    #librispeech = LibriSpeechAsrDataModule(args)
-    #test_sets = ['test-clean', 'test-other']
     safetspeech = SafetAsrDataModule(args)
     test_dl = safetspeech.test_dataloaders()
     results = decode(dataloader=test_dl,
