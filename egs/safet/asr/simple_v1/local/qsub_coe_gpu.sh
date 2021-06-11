@@ -4,17 +4,19 @@
 #$ -wd /home/hltcoe/aarora/snowfall/egs/safet/asr/simple_v1/
 #$ -V
 #$ -N decode_job
-#$ -j y -o $JOB_NAME-$JOB_ID.out
+#$ -j y -o $JOB_NAME
 #$ -M ashish.arora.88888@gmail.com
-#$ -m bea
 #$ -l mem_free=32G
 #$ -l h_rt=24:00:00
 #$ -l hostname='!r8n04'
 
 # big data config
 # qsub -l gpu=4 -q gpu.q@@v100 -l h_rt=72:00:00
-
+# #$ -m bea
 # Activate dev environments and call programs
+
+epoch=30
+. ./utils/parse_options.sh
 source ~/.bashrc
 export PATH="/home/hltcoe/aarora/miniconda3/bin:$PATH"
 conda activate k2
@@ -29,8 +31,5 @@ echo "$0: Started at `date`"
 echo "$0: Running the job on GPU(s) $CUDA_VISIBLE_DEVICES"
 "$@"
 
-/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 30
-#bash run.sh
-
+/home/hltcoe/aarora/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch $epoch
 echo "$0: ended at `date`"
-# -l hostname='!r3n03&!r3n06&!r3n01&!r8n02&!r3n04&!r8n05&!r5n02'
