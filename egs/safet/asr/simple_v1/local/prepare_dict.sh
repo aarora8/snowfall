@@ -30,8 +30,8 @@ echo '<UNK> SPN' > $oov_word_phone
 local/get_biphone_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
 
 
-# convert words in the text to monophone sequence (exp/data/lm_train_monotext)
-# convert words in the text to biphone sequence (exp/data/lm_train_bitext)
+# convert words in the train text to monophone sequence (exp/data/lm_train_monotext)
+# convert words in the train text to biphone sequence (exp/data/lm_train_bitext)
 local/text_to_phones.py $dst_dir/oov_text.txt $dst_dir/optional_silence.txt \
   $lexicon_monophones_nosil $train_text \
   exp/data/lm_train_monotext exp/data/lm_train_bitext
