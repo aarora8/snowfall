@@ -27,7 +27,7 @@ echo '<UNK> SPN' > $oov_word_phone
 
 
 # create biphone lexicon from monophone lexicon
-local/get_positiondependent_lexicon.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
+local/get_positiondependent_lexicon2.py $lexicon_monophones_nosil $nonsil_biphones $lexicon_biphones_nosil
 cat $lexicon_biphones_nosil > $lexicon_combined_nosil
 
 # add silence and oov words and phones to the combined lexicon to get final lexicon
