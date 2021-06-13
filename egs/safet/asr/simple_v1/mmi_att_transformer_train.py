@@ -357,7 +357,7 @@ def get_parser():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=10,
+        default=60,
         help="Number of training epochs.")
     parser.add_argument(
         '--start-epoch',
@@ -471,7 +471,7 @@ def run(rank, world_size, args):
     fix_random_seed(42)
     setup_dist(rank, world_size, args.master_port)
 
-    exp_dir = Path('exp-' + model_type + '-noam-mmi-att-musan-sa-vgg-mmiali-ep10')
+    exp_dir = Path('exp-' + model_type + '-noam-mmi-att-musan-sa-vgg-mmiali-ep60')
     setup_logger(f'{exp_dir}/log/log-train-{rank}')
     if args.tensorboard and rank == 0:
         tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard')
