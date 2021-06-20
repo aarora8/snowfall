@@ -19,6 +19,7 @@ from lhotse import validate_recordings_and_supervisions
 from lhotse.audio import Recording, RecordingSet
 from lhotse.supervision import SupervisionSegment, SupervisionSet
 from lhotse.utils import Pathlike, check_and_rglob, recursion_limit
+from lhotse import load_manifest
 
 from snowfall.common import str2bool
 
@@ -105,6 +106,16 @@ def main():
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
             }
+
+    sups = load_manifest('exp/data/supervisions_safet_train.json')
+    f = open('exp/data/lm_train_text', 'w')
+    for s in sups:
+        print(s.text, file=f)
+
+    sups = load_manifest('exp/data/supervisions_safet_dev_clean.json')
+    f = open('exp/data/lm_dev_text', 'w')
+    for s in sups:
+        print(s.text, file=f)
 
     print('Musan manifest preparation:')
     musan_cuts_path = output_dir / 'cuts_musan.json.gz'
