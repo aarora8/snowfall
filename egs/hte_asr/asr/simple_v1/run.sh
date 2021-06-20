@@ -3,11 +3,8 @@
 # Copyright 2020 Xiaomi Corporation (Author: Junbo Zhang)
 # Apache 2.0
 
-# Example of how to build L and G FST for K2. Most scripts of this example are copied from Kaldi.
-
 set -eou pipefail
 . ./path.sh
-# ./run.sh | tee local2/logfile/run_logfile.txt
 #prepare.py is independent
 #prepare_dict will run after prepare.py
 #prepare_lang will run after prepare dict
@@ -15,8 +12,7 @@ set -eou pipefail
 stage=0
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
-  #cp -r corpora_data/data .
-  utils/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
+  prepare.py
 fi
 
 if [ $stage -le 1 ]; then
