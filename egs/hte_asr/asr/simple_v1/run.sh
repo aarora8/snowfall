@@ -12,7 +12,7 @@ set -eou pipefail
 stage=0
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
-  prepare.py
+  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 1 ]; then
