@@ -90,7 +90,7 @@ def main():
     output_dir = Path('exp/data')
     print('ami manifest preparation:')
     ami_manifests = defaultdict(dict)
-    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/kaldi4/egs/hte_asr/s5/data/dev', 16000)
+    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/dev', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
     ami_manifests['dev'] = {
@@ -98,7 +98,7 @@ def main():
                 'supervisions': supervision_set_dev
             }
 
-    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/exp/aarora/kaldi4/egs/hte_asr/s5/data/train', 16000)
+    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/train', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
     ami_manifests['train'] = {

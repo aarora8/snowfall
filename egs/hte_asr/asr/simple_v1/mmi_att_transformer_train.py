@@ -357,12 +357,12 @@ def get_parser():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=120,
+        default=60,
         help="Number of training epochs.")
     parser.add_argument(
         '--start-epoch',
         type=int,
-        default=56,
+        default=0,
         help="Number of start epoch.")
     parser.add_argument(
         '--warm-step',

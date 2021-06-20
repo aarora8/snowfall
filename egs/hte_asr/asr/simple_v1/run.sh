@@ -15,12 +15,13 @@ set -eou pipefail
 stage=6
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
+  #cp -r corpora_data/data .
   utils/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
 fi
 
 if [ $stage -le 1 ]; then
   echo "Stage 1: Create lexicon similar to librispeech"
-  local/prepare_dict2.sh
+  local/prepare_dict.sh
 fi
 
 if [ $stage -le 2 ]; then
@@ -57,9 +58,9 @@ fi
 
 if [ $stage -le 6 ]; then
   echo "Stage 6: train conformer model with train and dev clean data directories"
-  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_conformer_120.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_train.py
+  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_conformer_60.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_train.py
 fi
 if [ $stage -le 7 ]; then
   echo "Stage 7: decode dev data directory with trained conformer model"
-  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_120.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 120
+  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_60.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 60
 fi
