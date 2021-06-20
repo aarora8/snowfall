@@ -12,7 +12,7 @@ set -eou pipefail
 #prepare_dict will run after prepare.py
 #prepare_lang will run after prepare dict
 #train_lm_srilm will run after prepare.py
-stage=6
+stage=0
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
   #cp -r corpora_data/data .
