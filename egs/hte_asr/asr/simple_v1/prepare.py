@@ -89,20 +89,20 @@ def main():
     )
 
     output_dir = Path('exp/data')
-    print('ami manifest preparation:')
-    ami_manifests = defaultdict(dict)
-    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/dev', 16000)
+    print('hte manifest preparation:')
+    hte_manifests = defaultdict(dict)
+    recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/dev', 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
-    ami_manifests['dev'] = {
+    hte_manifests['dev'] = {
                 'recordings': recording_set_dev,
                 'supervisions': supervision_set_dev
             }
 
-    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/train', 16000)
+    recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/train', 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
-    ami_manifests['train'] = {
+    hte_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
             }
@@ -128,9 +128,9 @@ def main():
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
-        for partition, manifests in ami_manifests.items():
+        for partition, manifests in hte_manifests.items():
             print(f"Processing {partition} ")
-            if (output_dir / f'cuts_ami_{partition}.json.gz').is_file():
+            if (output_dir / f'cuts_hte_{partition}.json.gz').is_file():
                 print(f'{partition} already exists - skipping.')
                 continue
             cut_set = CutSet.from_manifests(
@@ -145,14 +145,14 @@ def main():
             print(f"store cutset supervision")
             cut_set = cut_set.compute_and_store_features(
                 extractor=extractor,
-                storage_path=f'{output_dir}/feats_ami_{partition}',
+                storage_path=f'{output_dir}/feats_hte_{partition}',
                 # when an executor is specified, make more partitions
                 num_jobs=args.num_jobs if ex is None else 80,
                 executor=ex,
                 storage_type=LilcomHdf5Writer
             )
-            ami_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_ami_{partition}.json.gz')
+            hte_manifests[partition]['cuts'] = cut_set
+            cut_set.to_json(output_dir / f'cuts_hte_{partition}.json.gz')
         # Now onto Musan
         if not musan_cuts_path.is_file():
             print('Extracting features for Musan')
