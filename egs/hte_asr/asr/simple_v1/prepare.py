@@ -81,7 +81,6 @@ def get_parser():
 
 def main():
     args = get_parser().parse_args()
-
     musan_dir = locate_corpus(
         Path('/export/corpora5/JHU/musan'),
         Path('/export/common/data/corpora/MUSAN/musan'),
@@ -89,30 +88,32 @@ def main():
     )
 
     output_dir = Path('exp/data')
+    output_dir.mkdir(parents=True, exist_ok=True)
     print('hte manifest preparation:')
     hte_manifests = defaultdict(dict)
-    recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/dev', 16000)
-    validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
-    supervision_set_dev.to_json(output_dir / f'supervisions_dev.json')
+    #recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/dev', 16000)
+    #validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
+    output_dev = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/dev', 16000)
+    validate_recordings_and_supervisions(output_dev[0], output_dev[1])
+    output_dev[1].to_json(output_dir / f'supervisions_dev.json')
     hte_manifests['dev'] = {
-                'recordings': recording_set_dev,
-                'supervisions': supervision_set_dev
+                'recordings': output_dev[0],
+                'supervisions': output_dev[1]
             }
-
-    recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/train', 16000)
-    validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    supervision_set_eval.to_json(output_dir / f'supervisions_train.json')
+    output_train = lhotse.kaldi.load_kaldi_data_dir('corpora_data/data/train', 16000)
+    validate_recordings_and_supervisions(output_train[0], output_train[1])
+    output_train[1].to_json(output_dir / f'supervisions_train.json')
     hte_manifests['train'] = {
-                'recordings': recording_set_train,
-                'supervisions': supervision_set_train
+                'recordings': output_train[0],
+                'supervisions': output_train[1]
             }
 
-    sups = load_manifest('exp/data/supervisions_safet_train.json')
+    sups = load_manifest('exp/data/supervisions_train.json')
     f = open('exp/data/lm_train_text', 'w')
     for s in sups:
         print(s.text, file=f)
 
-    sups = load_manifest('exp/data/supervisions_safet_dev_clean.json')
+    sups = load_manifest('exp/data/supervisions_dev.json')
     f = open('exp/data/lm_dev_text', 'w')
     for s in sups:
         print(s.text, file=f)
