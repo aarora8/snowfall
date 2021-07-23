@@ -10,5 +10,6 @@ __pycache__/
 snowfall.egg-info/
 build/
 dist/
+tools/
 *.pt
 *.txt
