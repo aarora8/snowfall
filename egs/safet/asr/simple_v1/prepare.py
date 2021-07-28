@@ -13,7 +13,7 @@ from collections import defaultdict
 import torch
 import lhotse
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
-from lhotse import load_manifest
+from lhotse import load_manifest, fix_manifests
 from lhotse.recipes import prepare_musan
 from lhotse.utils import fastcopy
 from lhotse import validate_recordings_and_supervisions
@@ -97,17 +97,28 @@ def main():
 
     print('safet manifest preparation:')
     safet_manifests = defaultdict(dict)
-    dev_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef'
-    dev_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef'
-    train_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/train_cleaned_icef'
-    recording_set_dev_clean, supervision_set_dev_clean, feature_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir(dev_clean_path, 16000)
+    dev_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef_hires'
+    dev_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef_hires'
+    train_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/train_cleaned_icef_hires'
+
+    recording_set_dev_clean, supervision_set_dev_clean, feature_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir(dev_clean_path, 16000, 0.01)
+    recording_set_dev_clean, supervision_set_dev_clean = fix_manifests(
+                recordings=RecordingSet.from_recordings(recording_set_dev_clean),
+                supervisions=SupervisionSet.from_segments(supervision_set_dev_clean),
+            )
     validate_recordings_and_supervisions(recording_set_dev_clean, supervision_set_dev_clean)
     supervision_set_dev_clean.to_json(output_dir / f'supervisions_safet_dev_clean.json')
     safet_manifests['dev_clean'] = {
                 'recordings': recording_set_dev_clean,
                 'supervisions': supervision_set_dev_clean
             }
-    recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir(dev_path, 16000)
+
+
+    recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir(dev_path, 16000, 0.01)
+    recording_set_dev, supervision_set_dev = fix_manifests(
+                recordings=RecordingSet.from_recordings(recording_set_dev),
+                supervisions=SupervisionSet.from_segments(supervision_set_dev),
+            )
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     supervision_set_dev.to_json(output_dir / f'supervisions_safet_dev.json')
     safet_manifests['dev'] = {
@@ -115,14 +126,18 @@ def main():
                 'supervisions': supervision_set_dev
             }
 
-    recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir(train_clean_path, 16000)
+    recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir(train_clean_path, 16000, 0.01)
+    recording_set_train, supervision_set_train = fix_manifests(
+                recordings=RecordingSet.from_recordings(recording_set_train),
+                supervisions=SupervisionSet.from_segments(supervision_set_train),
+            )
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     supervision_set_train.to_json(output_dir / f'supervisions_safet_train.json')
     safet_manifests['train'] = {
                 'recordings': recording_set_train,
                 'supervisions': supervision_set_train
             }
-
+    exit()
     sups = load_manifest('exp/data/supervisions_safet_train.json')
     f = open('exp/data/lm_train_text', 'w')
     for s in sups:
@@ -132,7 +147,7 @@ def main():
     f = open('exp/data/lm_dev_text', 'w')
     for s in sups:
         print(s.text, file=f)
-
+    exit()
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:  # Initialize the executor only once.
