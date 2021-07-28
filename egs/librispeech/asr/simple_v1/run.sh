@@ -143,7 +143,8 @@ if [ $stage -le 7 ]; then
 fi
 
 if [ $stage -le 8 ]; then
-  python3 ./prepare.py
+  #python3 ./prepare.py
+  utils/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/icef/bin/python3 prepare.py
 fi
 
 
@@ -164,8 +165,8 @@ if [ $stage -le 9 ]; then
   # python3 ./mmi_att_transformer_train.py --world-size=2
 
   # single gpu training
-  python3 ./mmi_att_transformer_train.py
-
+  #python3 ./mmi_att_transformer_train.py
+  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_attn.log ~/miniconda3/envs/icef/bin/python3 mmi_att_transformer_train.py
   # Single node, multi-GPU training
   # Adapting to a multi-node scenario should be straightforward.
   # ngpus=2
@@ -176,5 +177,6 @@ if [ $stage -le 10 ]; then
   # python3 ./decode.py # ctc decoding
   # python3 ./mmi_bigram_decode.py --epoch 9
   #  python3 ./mmi_mbr_decode.py
-  python3 ./mmi_att_transformer_decode.py
+  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_attn.log ~/miniconda3/envs/icef/bin/python3 mmi_att_transformer_decode.py
+  #python3 ./mmi_att_transformer_decode.py
 fi
