@@ -17,8 +17,9 @@ from lhotse import load_manifest, fix_manifests
 from lhotse.recipes import prepare_musan
 from lhotse.utils import fastcopy
 from lhotse import validate_recordings_and_supervisions
-from lhotse.audio import Recording, RecordingSet
-from lhotse.supervision import SupervisionSegment, SupervisionSet
+from lhotse.audio import RecordingSet
+from lhotse.supervision import SupervisionSet
+from lhotse.features import FeatureSet
 from lhotse.utils import Pathlike, check_and_rglob, recursion_limit
 from snowfall.common import str2bool
 
@@ -107,12 +108,10 @@ def main():
                 supervisions=SupervisionSet.from_segments(supervision_set_dev_clean),
             )
     validate_recordings_and_supervisions(recording_set_dev_clean, supervision_set_dev_clean)
-    supervision_set_dev_clean.to_json(output_dir / f'supervisions_safet_dev_clean.json')
-    safet_manifests['dev_clean'] = {
-                'recordings': recording_set_dev_clean,
-                'supervisions': supervision_set_dev_clean
-            }
-
+    cut_set = CutSet.from_manifests(recordings=recording_set_dev_clean, supervisions=supervision_set_dev_clean,
+                                        features=feature_set_dev_clean).trim_to_supervisions()
+    safet_manifests['dev_clean']['cuts'] = cut_set
+    cut_set.to_json(output_dir / f'cuts_safet_dev_clean.json.gz')
 
     recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir(dev_path, 16000, 0.01)
     recording_set_dev, supervision_set_dev = fix_manifests(
@@ -120,11 +119,10 @@ def main():
                 supervisions=SupervisionSet.from_segments(supervision_set_dev),
             )
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
-    supervision_set_dev.to_json(output_dir / f'supervisions_safet_dev.json')
-    safet_manifests['dev'] = {
-                'recordings': recording_set_dev,
-                'supervisions': supervision_set_dev
-            }
+    cut_set = CutSet.from_manifests(recordings=recording_set_dev, supervisions=supervision_set_dev,
+                                        features=feature_set_dev).trim_to_supervisions()
+    safet_manifests['dev']['cuts'] = cut_set
+    cut_set.to_json(output_dir / f'cuts_safet_dev.json.gz')
 
     recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir(train_clean_path, 16000, 0.01)
     recording_set_train, supervision_set_train = fix_manifests(
@@ -132,53 +130,15 @@ def main():
                 supervisions=SupervisionSet.from_segments(supervision_set_train),
             )
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
-    supervision_set_train.to_json(output_dir / f'supervisions_safet_train.json')
-    safet_manifests['train'] = {
-                'recordings': recording_set_train,
-                'supervisions': supervision_set_train
-            }
-    exit()
-    sups = load_manifest('exp/data/supervisions_safet_train.json')
-    f = open('exp/data/lm_train_text', 'w')
-    for s in sups:
-        print(s.text, file=f)
+    cut_set = CutSet.from_manifests(recordings=recording_set_train, supervisions=supervision_set_train,
+                                        features=feature_set_train).trim_to_supervisions()
+    safet_manifests['train']['cuts'] = cut_set
+    cut_set.to_json(output_dir / f'cuts_safet_train.json.gz')
 
-    sups = load_manifest('exp/data/supervisions_safet_dev_clean.json')
-    f = open('exp/data/lm_dev_text', 'w')
-    for s in sups:
-        print(s.text, file=f)
     exit()
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
-    with get_executor() as ex:  # Initialize the executor only once.
-        for partition, manifests in safet_manifests.items():
-            if (output_dir / f'cuts_safet_{partition}.json.gz').is_file():
-                print(f'{partition} already exists - skipping.')
-                continue
-            print('Processing', partition)
-            cut_set = CutSet.from_manifests(
-                recordings=manifests['recordings'],
-                supervisions=manifests['supervisions']
-            )
-            cut_set = cut_set.trim_to_supervisions()
-            cut_set = cut_set.map(lambda c: fastcopy(c, supervisions=[s for s in c.supervisions if s.start == 0 and abs(s.duration - c.duration) <= 1e-3]))
-            if partition != 'train':
-                print(f'filtering cuts in {partition} partition.')
-                cut_set = cut_set.filter(lambda c: c.duration >= 1)
-            if 'train' in partition:
-                cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
-
-            cut_set = cut_set.compute_and_store_features(
-                extractor=extractor,
-                storage_path=f'{output_dir}/feats_safet_{partition}',
-                num_jobs=args.num_jobs if ex is None else 80,
-                executor=ex,
-                storage_type=LilcomHdf5Writer
-            )
-            safet_manifests[partition]['cuts'] = cut_set
-            cut_set.to_json(output_dir / f'cuts_safet_{partition}.json.gz')
-
-        # Now onto Musan
+    with get_executor() as ex:
         if not musan_cuts_path.is_file():
             print('Extracting features for Musan')
             # create chunks of Musan with duration 5 - 10 seconds
