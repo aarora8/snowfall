@@ -1,13 +1,7 @@
 #!/usr/bin/env bash
-
-# Copyright 2020 Xiaomi Corporation (Author: Junbo Zhang)
-# Apache 2.0
-
-# Example of how to build L and G FST for K2. Most scripts of this example are copied from Kaldi.
-
 set -eou pipefail
 . ./path.sh
-# ./run.sh | tee local2/logfile/run_logfile.txt
+# ./run.sh | tee run.log
 #prepare.py is independent
 #prepare_dict will run after prepare.py
 #prepare_lang will run after prepare dict
@@ -15,7 +9,7 @@ set -eou pipefail
 stage=0
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
-  utils/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/k2/bin/python3 prepare.py
+  utils/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/icef/bin/python3 prepare.py
 fi
 
 if [ $stage -le 1 ]; then
@@ -48,19 +42,19 @@ fi
 
 if [ $stage -le 4 ]; then
   echo "Stage 4: train lstm model with train and dev clean data directories"
-  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_lstm.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_train.py
+  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_lstm.log ~/miniconda3/envs/icef/bin/python3 mmi_bigram_train.py
 fi
 if [ $stage -le 5 ]; then
   echo "Stage 5: decode dev data directory with trained lstm model"
-  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_lstm.log ~/miniconda3/envs/k2/bin/python3 mmi_bigram_decode.py --epoch 9
+  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_lstm.log ~/miniconda3/envs/icef/bin/python3 mmi_bigram_decode.py --epoch 9
 fi
 
 if [ $stage -le 6 ]; then
   echo "Stage 6: train conformer model with train and dev clean data directories"
-  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_conformer_60.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_train.py
+  utils/queue.pl --mem 32G --gpu 1 --config local/coe.conf exp/train_conformer_60.log ~/miniconda3/envs/icef/bin/python3 mmi_att_transformer_train.py
 fi
 if [ $stage -le 7 ]; then
   echo "Stage 7: decode dev data directory with trained conformer model"
-  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_60.log ~/miniconda3/envs/k2/bin/python3 mmi_att_transformer_decode.py --epoch 30
+  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_60.log ~/miniconda3/envs/icef/bin/python3 mmi_att_transformer_decode.py --epoch 30
 fi
 

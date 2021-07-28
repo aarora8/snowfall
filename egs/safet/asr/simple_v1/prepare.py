@@ -14,7 +14,7 @@ import torch
 import lhotse
 from lhotse import CutSet, Fbank, FbankConfig, LilcomHdf5Writer, combine
 from lhotse import load_manifest
-from lhotse.recipes import prepare_safet, prepare_musan
+from lhotse.recipes import prepare_musan
 from lhotse.utils import fastcopy
 from lhotse import validate_recordings_and_supervisions
 from lhotse.audio import Recording, RecordingSet
@@ -95,24 +95,19 @@ def main():
         parts=('music', 'speech', 'noise')
     )
 
-    #print('safet manifest preparation:')
-    #safet_manifests = prepare_safet(
-    #    corpus_dir='/exp/aarora/corpora/safet/',
-    #    lexicon_dir='data/local/dict_nosp/lexicon/',
-    #    output_dir=output_dir
-    #)
-
     print('safet manifest preparation:')
     safet_manifests = defaultdict(dict)
-    recording_set_dev_clean, supervision_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/dev_clean', 16000)
+    dev_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef'
+    dev_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef'
+    train_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/train_cleaned_icef'
+    recording_set_dev_clean, supervision_set_dev_clean, feature_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir(dev_clean_path, 16000)
     validate_recordings_and_supervisions(recording_set_dev_clean, supervision_set_dev_clean)
     supervision_set_dev_clean.to_json(output_dir / f'supervisions_safet_dev_clean.json')
     safet_manifests['dev_clean'] = {
                 'recordings': recording_set_dev_clean,
                 'supervisions': supervision_set_dev_clean
             }
-
-    recording_set_dev, supervision_set_dev = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/safe_t_dev1', 16000)
+    recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir(dev_path, 16000)
     validate_recordings_and_supervisions(recording_set_dev, supervision_set_dev)
     supervision_set_dev.to_json(output_dir / f'supervisions_safet_dev.json')
     safet_manifests['dev'] = {
@@ -120,7 +115,7 @@ def main():
                 'supervisions': supervision_set_dev
             }
 
-    recording_set_train, supervision_set_train = lhotse.kaldi.load_kaldi_data_dir('/home/hltcoe/aarora/kaldi/egs/opensat20/s5/data/train_cleaned', 16000)
+    recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir(train_clean_path, 16000)
     validate_recordings_and_supervisions(recording_set_train, supervision_set_train)
     supervision_set_train.to_json(output_dir / f'supervisions_safet_train.json')
     safet_manifests['train'] = {
@@ -156,7 +151,6 @@ def main():
                 print(f'filtering cuts in {partition} partition.')
                 cut_set = cut_set.filter(lambda c: c.duration >= 1)
             if 'train' in partition:
-                #cut_set.to_json(output_dir / f'cuts_safet__wo_sp_{partition}.json.gz')
                 cut_set = cut_set + cut_set.perturb_speed(0.9) + cut_set.perturb_speed(1.1)
 
             cut_set = cut_set.compute_and_store_features(
