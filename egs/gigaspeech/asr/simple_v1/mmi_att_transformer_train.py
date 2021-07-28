@@ -3,6 +3,7 @@
 # Copyright (c)  2020  Xiaomi Corporation (authors: Daniel Povey
 #                                                   Haowen Qiu
 #                                                   Fangjun Kuang)
+#                2020  Johns Hopkins University (author: Piotr Żelasko)
 #                2021  University of Chinese Academy of Sciences (author: Han Zhu)
 # Apache 2.0
 
@@ -19,7 +20,6 @@ import numpy as np
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from torch import nn
 from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.nn.utils import clip_grad_value_
@@ -32,7 +32,6 @@ from snowfall.common import find_first_disambig_symbol
 from snowfall.common import load_checkpoint, save_checkpoint
 from snowfall.common import save_training_info
 from snowfall.common import setup_logger
-from snowfall.data.librispeech import LibriSpeechAsrDataModule
 from snowfall.dist import cleanup_dist
 from snowfall.dist import setup_dist
 from snowfall.lexicon import Lexicon
@@ -44,6 +43,8 @@ from snowfall.models.transformer import Noam, Transformer
 from snowfall.objectives import LFMMILoss, encode_supervisions
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
+
+from asr_datamodule import GigaSpeechAsrDataModule
 
 
 def get_objf(batch: Dict,
@@ -89,6 +90,7 @@ def get_objf(batch: Dict,
             del supervisions['text']
 
         nnet_output, encoder_memory, memory_mask = model(feature, supervisions)
+
         if att_rate != 0.0:
             if hasattr(model, 'module'):
                 att_loss = model.module.decoder_forward(encoder_memory, memory_mask, supervisions, graph_compiler)
@@ -99,6 +101,10 @@ def get_objf(batch: Dict,
                 global_batch_idx_train // accum_grad < 4000):
             with torch.no_grad():
                 ali_model_output = ali_model(feature)
+            if ali_model_output.isinf().any() or ali_model_output.isnan().any():
+                logging.warning("Found 'nan' or 'inf' in ali_model_output... Setting it to zero.")
+                ali_model_output[ali_model_output.isinf()] = 0.0
+                ali_model_output[ali_model_output.isnan()] = 0.0
             # subsampling is done slightly differently, may be small length
             # differences.
             min_len = min(ali_model_output.shape[2], nnet_output.shape[2])
@@ -418,7 +424,7 @@ def get_parser():
     parser.add_argument(
         '--use-ali-model',
         type=str2bool,
-        default=True,
+        default=False,
         help='If true, we assume that you have run ./ctc_train.py '
              'and you have some checkpoints inside the directory '
              'exp-lstm-adam-ctc-musan/ .'
@@ -482,13 +488,17 @@ def run(rank, world_size, args):
     if world_size > 1:
         setup_dist(rank, world_size, args.master_port)
 
-    exp_dir = Path('exp-' + model_type + '-mmi-att-sa-vgg-normlayer')
+    suffix = ''
+    if args.context_window is not None and args.context_window > 0:
+        suffix = f'ac{args.context_window}'
+    giga_subset = f'giga{args.subset}'
+    exp_dir = Path(f'exp-{model_type}-mmi-att-sa-vgg-normlayer-{giga_subset}-{suffix}')
+
     setup_logger(f'{exp_dir}/log/log-train-{rank}')
     if args.tensorboard and rank == 0:
         tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard')
     else:
         tb_writer = None
-    #  tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard') if args.tensorboard and rank == 0 else None
 
     logging.info("Loading lexicon and symbol tables")
     lang_dir = Path('data/lang_nosp')
@@ -497,9 +507,9 @@ def run(rank, world_size, args):
     device_id = rank
     device = torch.device('cuda', device_id)
 
-    if not Path(lang_dir / 'P.pt').is_file():
-        logging.debug(f'Loading P from {lang_dir}/P.fst.txt')
-        with open(lang_dir / 'P.fst.txt') as f:
+    if not Path(lang_dir / f'P_{args.subset}.pt').is_file():
+        logging.debug(f'Loading P from {lang_dir}/P_{args.subset}.fst.txt')
+        with open(lang_dir / f'P_{args.subset}.fst.txt') as f:
             # P is not an acceptor because there is
             # a back-off state, whose incoming arcs
             # have label #0 and aux_label eps.
@@ -518,10 +528,10 @@ def run(rank, world_size, args):
 
         P = k2.remove_epsilon(P)
         P = k2.arc_sort(P)
-        torch.save(P.as_dict(), lang_dir / 'P.pt')
+        torch.save(P.as_dict(), lang_dir / f'P_{args.subset}.pt')
     else:
         logging.debug('Loading pre-compiled P')
-        d = torch.load(lang_dir / 'P.pt')
+        d = torch.load(lang_dir / f'P_{args.subset}.pt')
         P = k2.Fsa.from_dict(d)
 
     graph_compiler = MmiTrainingGraphCompiler(
@@ -531,9 +541,9 @@ def run(rank, world_size, args):
     )
     phone_ids = lexicon.phone_symbols()
 
-    librispeech = LibriSpeechAsrDataModule(args)
-    train_dl = librispeech.train_dataloaders()
-    valid_dl = librispeech.valid_dataloaders()
+    gigaspeech = GigaSpeechAsrDataModule(args)
+    train_dl = gigaspeech.train_dataloaders()
+    valid_dl = gigaspeech.valid_dataloaders()
 
     if not torch.cuda.is_available():
         logging.error('No GPU detected!')
@@ -721,7 +731,7 @@ def run(rank, world_size, args):
 
 def main():
     parser = get_parser()
-    LibriSpeechAsrDataModule.add_arguments(parser)
+    GigaSpeechAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
     world_size = args.world_size
     assert world_size >= 1
@@ -733,6 +743,13 @@ def main():
 
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
+
+# Workaround for logging not working in multi GPU training on some systems:
+#def print_(x):
+#    now = datetime.now()
+#    print(now, x)
+#
+#logging.info = print_
 
 if __name__ == '__main__':
     main()

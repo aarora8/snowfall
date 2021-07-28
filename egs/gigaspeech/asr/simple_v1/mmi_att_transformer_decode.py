@@ -3,6 +3,7 @@
 # Copyright (c)  2020  Xiaomi Corporation (authors: Daniel Povey
 #                                                   Haowen Qiu
 #                                                   Fangjun Kuang)
+#                2020  Johns Hopkins University (author: Piotr Żelasko)
 #                2021  University of Chinese Academy of Sciences (author: Han Zhu)
 # Apache 2.0
 
@@ -39,38 +40,38 @@
 '''
 
 import argparse
-import k2
 import logging
-import numpy as np
 import os
-import torch
-from k2 import Fsa, SymbolTable
+import subprocess
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
 from typing import Dict
 from typing import List
 from typing import Optional
-from typing import Union
 
+import k2
+import torch
+from k2 import Fsa, SymbolTable
 
-from snowfall.common import average_checkpoint, store_transcripts
+from asr_datamodule import GigaSpeechAsrDataModule
+from snowfall.common import average_checkpoint, store_transcripts, store_transcripts_for_sclite
 from snowfall.common import find_first_disambig_symbol
 from snowfall.common import get_texts
-from snowfall.common import write_error_stats
 from snowfall.common import load_checkpoint
 from snowfall.common import setup_logger
 from snowfall.common import str2bool
-from snowfall.data import LibriSpeechAsrDataModule
+from snowfall.common import write_error_stats
 from snowfall.decoding.graph import compile_HLG
 from snowfall.decoding.lm_rescore import rescore_with_n_best_list
 from snowfall.decoding.lm_rescore import rescore_with_whole_lattice
 from snowfall.models import AcousticModel
-from snowfall.models.transformer import Transformer
 from snowfall.models.conformer import Conformer
 from snowfall.models.contextnet import ContextNet
+from snowfall.models.transformer import Transformer
 from snowfall.training.ctc_graph import build_ctc_topo
 from snowfall.training.mmi_graph import get_phone_symbols
+
 
 def nbest_decoding(lats: k2.Fsa, num_paths: int):
     '''
@@ -323,13 +324,13 @@ def decode(dataloader: torch.utils.data.DataLoader, model: AcousticModel,
 
             results[lm_scale].extend(this_batch)
 
+        num_cuts += len(texts)
+
         if batch_idx % 10 == 0:
             logging.info(
                 'batch {}, cuts processed until now is {}/{} ({:.6f}%)'.format(
                     batch_idx, num_cuts, tot_num_cuts,
                     float(num_cuts) / tot_num_cuts * 100))
-
-        num_cuts += len(texts)
 
     return results
 
@@ -405,7 +406,7 @@ def get_parser():
 
 def main():
     parser = get_parser()
-    LibriSpeechAsrDataModule.add_arguments(parser)
+    GigaSpeechAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
 
     model_type = args.model_type
@@ -422,7 +423,12 @@ def main():
 
     output_beam_size = args.output_beam_size
 
-    exp_dir = Path('exp-' + model_type + '-mmi-att-sa-vgg-normlayer')
+    suffix = ''
+    if args.context_window is not None and args.context_window > 0:
+        suffix = f'ac{args.context_window}'
+    giga_subset = f'giga{args.subset}'
+    exp_dir = Path(f'exp-{model_type}-mmi-att-sa-vgg-normlayer-{giga_subset}-{suffix}')
+
     setup_logger('{}/log/log-decode'.format(exp_dir), log_level='debug')
 
     logging.info(f'output_beam_size: {output_beam_size}')
@@ -555,9 +561,9 @@ def main():
         HLG.lm_scores = HLG.scores.clone()
 
     # load dataset
-    librispeech = LibriSpeechAsrDataModule(args)
-    test_sets = ['test-clean', 'test-other']
-    for test_set, test_dl in zip(test_sets, librispeech.test_dataloaders()):
+    gigaspeech = GigaSpeechAsrDataModule(args)
+    test_sets = ['DEV', 'TEST']
+    for test_set, test_dl in zip(test_sets, [gigaspeech.valid_dataloaders(), gigaspeech.test_dataloaders()]):
         logging.info(f'* DECODING: {test_set}')
 
         test_set_wers = dict()
@@ -574,6 +580,21 @@ def main():
             recog_path = exp_dir / f'recogs-{test_set}-{key}.txt'
             store_transcripts(path=recog_path, texts=results)
             logging.info(f'The transcripts are stored in {recog_path}')
+
+            ref_path = exp_dir / f'ref-{test_set}.trn'
+            hyp_path = exp_dir / f'hyp-{test_set}.trn'
+            store_transcripts_for_sclite(
+                ref_path=ref_path,
+                hyp_path=hyp_path,
+                texts=results
+            )
+            logging.info(f'The sclite-format transcripts are stored in {ref_path} and {hyp_path}')
+            cmd = f'python3 GigaSpeech/utils/gigaspeech_scoring.py {ref_path} {hyp_path} {exp_dir / "tmp_sclite"}'
+            logging.info(cmd)
+            try:
+                subprocess.run(cmd, check=True, shell=True)
+            except subprocess.CalledProcessError:
+                logging.error('Skipping sclite scoring as it failed to run: Is "sclite" registered in your $PATH?"')
 
             # The following prints out WERs, per-word error statistics and aligned
             # ref/hyp pairs.
