@@ -279,7 +279,7 @@ def main():
     tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard') if args.local_rank == 0 else None
 
     # load L, G, symbol_table
-    lang_dir = Path('data/lang_nosp')
+    lang_dir = Path('data/lang')
     lexicon = Lexicon(lang_dir)
 
     device_id = args.local_rank

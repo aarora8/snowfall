@@ -302,7 +302,7 @@ def main():
     logging.info(f'output_beam_size: {output_beam_size}')
 
     # load L, G, symbol_table
-    lang_dir = Path('data/lang_nosp')
+    lang_dir = Path('data/lang')
     symbol_table = k2.SymbolTable.from_file(lang_dir / 'words.txt')
     phone_symbol_table = k2.SymbolTable.from_file(lang_dir / 'phones.txt')
 

@@ -479,7 +479,7 @@ def run(rank, world_size, args):
         tb_writer = None
 
     logging.info("Loading lexicon and symbol tables")
-    lang_dir = Path('data/lang_nosp')
+    lang_dir = Path('data/lang')
     lexicon = Lexicon(lang_dir)
 
     device_id = rank
