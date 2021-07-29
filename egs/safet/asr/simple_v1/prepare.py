@@ -112,6 +112,7 @@ def main():
                                         features=feature_set_dev_clean).trim_to_supervisions()
     safet_manifests['dev_clean']['cuts'] = cut_set
     cut_set.to_json(output_dir / f'cuts_safet_dev_clean.json.gz')
+    supervision_set_dev_clean.to_json(output_dir / f'supervisions_safet_dev_clean.json')
 
     recording_set_dev, supervision_set_dev, feature_set_dev = lhotse.kaldi.load_kaldi_data_dir(dev_path, 16000, 0.01)
     recording_set_dev, supervision_set_dev = fix_manifests(
@@ -123,6 +124,7 @@ def main():
                                         features=feature_set_dev).trim_to_supervisions()
     safet_manifests['dev']['cuts'] = cut_set
     cut_set.to_json(output_dir / f'cuts_safet_dev.json.gz')
+    supervision_set_dev.to_json(output_dir / f'supervisions_safet_train.json')
 
     recording_set_train, supervision_set_train, feature_set_train = lhotse.kaldi.load_kaldi_data_dir(train_clean_path, 16000, 0.01)
     recording_set_train, supervision_set_train = fix_manifests(
@@ -134,8 +136,8 @@ def main():
                                         features=feature_set_train).trim_to_supervisions()
     safet_manifests['train']['cuts'] = cut_set
     cut_set.to_json(output_dir / f'cuts_safet_train.json.gz')
+    supervision_set_train.to_json(output_dir / f'supervisions_safet_train.json')
 
-    exit()
     print('Feature extraction:')
     extractor = Fbank(FbankConfig(num_mel_bins=80))
     with get_executor() as ex:

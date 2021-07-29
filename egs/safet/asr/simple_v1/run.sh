@@ -14,30 +14,29 @@ fi
 
 if [ $stage -le 1 ]; then
   echo "Stage 1: Create lexicon similar to librispeech"
-  local/prepare_dict2.sh
+  local/prepare_dict.sh
 fi
 
 if [ $stage -le 2 ]; then
   echo "Stage 2: Create the data/lang_nosp directory that has a specific HMM topolopy"
   local/prepare_lang.sh \
-    --position-dependent-phones false \
-    data/local/dict_nosp \
+    data/local/dict \
     "<UNK>" \
-    data/local/lang_tmp_nosp \
-    data/lang_nosp
+    data/local/lang_tmp \
+    data/lang
 fi
 
 if [ $stage -le 3 ]; then
   echo "Stage 3: Create lm from train and dev clean text"
-  local/train_lm_srilm.sh
+  local/prepare_lm.sh
   gunzip -c data/local/lm/lm.gz >data/local/lm/lm_tgmed.arpa
 
   # Build G
   python3 -m kaldilm \
-    --read-symbol-table="data/lang_nosp/words.txt" \
+    --read-symbol-table="data/lang/words.txt" \
     --disambig-symbol='#0' \
     --max-order=3 \
-    data/local/lm/lm_tgmed.arpa >data/lang_nosp/G.fst.txt
+    data/local/lm/lm_tgmed.arpa >data/lang/G.fst.txt
 fi
 
 if [ $stage -le 4 ]; then
@@ -55,6 +54,6 @@ if [ $stage -le 6 ]; then
 fi
 if [ $stage -le 7 ]; then
   echo "Stage 7: decode dev data directory with trained conformer model"
-  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_60.log ~/miniconda3/envs/icef/bin/python3 mmi_att_transformer_decode.py --epoch 30
+  utils/queue.pl --mem 10G --gpu 1 --config local/coe.conf exp/decode_conformer_60.log ~/miniconda3/envs/icef/bin/python3 mmi_att_transformer_decode.py --epoch 60
 fi
 
