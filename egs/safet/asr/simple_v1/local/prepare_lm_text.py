@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import torch
 import lhotse
 from lhotse import load_manifest, fix_manifests

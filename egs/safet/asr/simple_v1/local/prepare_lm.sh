@@ -11,17 +11,18 @@ echo "-------------------------------------"
 tgtdir=data/local/lm
 train_text=exp/data/lm_train_text
 dev_text=exp/data/lm_dev_text
-words_file=data/lang_nosp/words.txt
+words_file=data/lang/words.txt
 oov_symbol="<UNK>"
 ##End of configuration
 
 mkdir -p $tgtdir
+echo "preparing lm text"
+local/prepare_lm_text.py
+
+
 for f in $words_file $train_text $dev_text; do
   [ ! -s $f ] && echo "No such file $f" && exit 1;
 done
-
-echo "preparing lm text"
-local/prepare_lm_text.py
 
 echo "Using train text: $train_text"
 echo "Using dev text  : $dev_text"
