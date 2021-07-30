@@ -33,7 +33,6 @@ from snowfall.dist import cleanup_dist, setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.tdnn_lstm import TdnnLstm1b
-from snowfall.models.tdnn import Tdnn1a
 from snowfall.objectives.mmi import LFMMILoss
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
@@ -83,7 +82,7 @@ def get_objf(batch: Dict,
              optimizer: Optional[torch.optim.Optimizer] = None):
     feature = batch['inputs']
     # at entry, feature is [N, T, C]
-    feature = feature.permute(0, 2, 1)  # now feature is [N, C, T]
+    feature = feature.permute(0, 2, 1)
     assert feature.ndim == 3
     feature = feature.to(device)
 
@@ -102,7 +101,7 @@ def get_objf(batch: Dict,
     with grad_context():
         nnet_output = model(feature)
         # nnet_output is [N, C, T]
-        nnet_output = nnet_output.permute(0, 2, 1)  # now nnet_output is [N, T, C]
+        nnet_output = nnet_output.permute(0, 2, 1)
         mmi_loss, tot_frames, all_frames = loss_fn(nnet_output, texts, supervision_segments)
 
     if is_training:
@@ -342,9 +341,6 @@ def main():
     model = TdnnLstm1b(num_features=80,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=4)
-    #model = Tdnn1a(num_features=80,
-    #                   num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
-    #                   subsampling_factor=3)
     model.P_scores = nn.Parameter(P.scores.clone(), requires_grad=True)
 
     model.to(device)
