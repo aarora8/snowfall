@@ -283,8 +283,13 @@ def main():
 
     device_id = args.local_rank
     device = torch.device('cuda', device_id)
+    #graph_compiler = MmiTrainingGraphCompiler(
+    #    lexicon=lexicon,
+    #    device=device,
+    #)
     graph_compiler = MmiTrainingGraphCompiler(
         lexicon=lexicon,
+        P=P,
         device=device,
     )
     phone_ids = lexicon.phone_symbols()
