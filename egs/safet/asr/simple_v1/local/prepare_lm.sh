@@ -3,11 +3,7 @@ export LC_ALL=C
 echo "$0 $@"
 [ -f path.sh ]  && . ./path.sh
 
-echo "-------------------------------------"
-echo "Building an SRILM language model     "
-echo "-------------------------------------"
-
-
+echo "building a language model     "
 tgtdir=data/local/lm
 train_text=exp/data/lm_train_text
 dev_text=exp/data/lm_dev_text
