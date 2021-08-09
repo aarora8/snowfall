@@ -98,9 +98,9 @@ def main():
 
     print('safet manifest preparation:')
     safet_manifests = defaultdict(dict)
-    dev_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/archive/run_1/data/dev_cleaned_icef_hires'
-    dev_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/archive/run_1/data/dev_cleaned_icef_hires'
-    train_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/archive/run_1/data/train_cleaned_icef_hires'
+    dev_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef_hires'
+    dev_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/dev_cleaned_icef_hires'
+    train_clean_path = '/exp/aarora/kaldi_work_env/kaldi_me/egs/safet/s5/data/train_cleaned_icef_hires'
 
     recording_set_dev_clean, supervision_set_dev_clean, feature_set_dev_clean = lhotse.kaldi.load_kaldi_data_dir(dev_clean_path, 16000, 0.01)
     recording_set_dev_clean, supervision_set_dev_clean = fix_manifests(
