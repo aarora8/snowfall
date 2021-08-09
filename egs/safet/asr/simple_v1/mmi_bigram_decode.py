@@ -105,7 +105,7 @@ def main():
     setup_logger('{}/log/log-decode'.format(exp_dir), log_level='debug')
 
     # load L, G, symbol_table
-    lang_dir = Path('data/lang_nosp')
+    lang_dir = Path('data/lang')
     lexicon = Lexicon(lang_dir)
 
     phone_ids = lexicon.phone_symbols()
