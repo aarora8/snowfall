@@ -3,6 +3,7 @@
 # Copyright (c)  2020  Xiaomi Corporation (authors: Daniel Povey
 #                                                   Haowen Qiu
 #                                                   Fangjun Kuang)
+#                2020  Johns Hopkins University (author: Piotr Żelasko)
 #                2021  University of Chinese Academy of Sciences (author: Han Zhu)
 # Apache 2.0
 
@@ -13,14 +14,12 @@ import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional
-from collections import OrderedDict
 
 import k2
 import numpy as np
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
-from torch import nn
 from torch.cuda.amp import GradScaler, autocast
 from torch.nn.parallel import DistributedDataParallel as DDP
 from torch.nn.utils import clip_grad_value_
@@ -29,29 +28,28 @@ from torch.utils.tensorboard import SummaryWriter
 
 from lhotse.utils import fix_random_seed, nullcontext
 from snowfall.common import describe, str2bool
+from snowfall.common import find_first_disambig_symbol
 from snowfall.common import load_checkpoint, save_checkpoint
 from snowfall.common import save_training_info
 from snowfall.common import setup_logger
-from snowfall.data.safet import SafetAsrDataModule
 from snowfall.dist import cleanup_dist
 from snowfall.dist import setup_dist
 from snowfall.lexicon import Lexicon
 from snowfall.models import AcousticModel
 from snowfall.models.conformer import Conformer
+from snowfall.models.contextnet import ContextNet
 from snowfall.models.tdnn_lstm import TdnnLstm1b  # alignment model
 from snowfall.models.transformer import Noam, Transformer
-from snowfall.models.contextnet import ContextNet
 from snowfall.objectives import LFMMILoss, encode_supervisions
 from snowfall.training.diagnostics import measure_gradient_norms, optim_step_and_measure_param_change
 from snowfall.training.mmi_graph import MmiTrainingGraphCompiler
-from snowfall.training.mmi_graph import create_bigram_phone_lm
 
-logging.info = print
+from asr_datamodule import GigaSpeechAsrDataModule
+
 
 def get_objf(batch: Dict,
              model: AcousticModel,
              ali_model: Optional[AcousticModel],
-             P: k2.Fsa,
              device: torch.device,
              graph_compiler: MmiTrainingGraphCompiler,
              use_pruned_intersect: bool,
@@ -76,7 +74,6 @@ def get_objf(batch: Dict,
 
     loss_fn = LFMMILoss(
         graph_compiler=graph_compiler,
-        P=P,
         den_scale=den_scale,
         use_pruned_intersect=use_pruned_intersect
     )
@@ -84,29 +81,38 @@ def get_objf(batch: Dict,
     grad_context = nullcontext if is_training else torch.no_grad
 
     with autocast(enabled=scaler.is_enabled()), grad_context():
+
+        if att_rate == 0:
+            # Note: Make TorchScript happy by making the supervision dict strictly
+            #       conform to type Dict[str, Tensor]
+            #       Using the attention decoder with TorchScript is currently unsupported,
+            #       we'll need to separate out the 'text' field from 'supervisions' first.
+            del supervisions['text']
+
         nnet_output, encoder_memory, memory_mask = model(feature, supervisions)
+
         if att_rate != 0.0:
-            att_loss = model.module.decoder_forward(encoder_memory, memory_mask, supervisions, graph_compiler)
+            if hasattr(model, 'module'):
+                att_loss = model.module.decoder_forward(encoder_memory, memory_mask, supervisions, graph_compiler)
+            else:
+                att_loss = model.decoder_forward(encoder_memory, memory_mask, supervisions, graph_compiler)
 
         if (ali_model is not None and global_batch_idx_train is not None and
                 global_batch_idx_train // accum_grad < 4000):
             with torch.no_grad():
                 ali_model_output = ali_model(feature)
+            if ali_model_output.isinf().any() or ali_model_output.isnan().any():
+                logging.warning("Found 'nan' or 'inf' in ali_model_output... Setting it to zero.")
+                ali_model_output[ali_model_output.isinf()] = 0.0
+                ali_model_output[ali_model_output.isnan()] = 0.0
             # subsampling is done slightly differently, may be small length
             # differences.
             min_len = min(ali_model_output.shape[2], nnet_output.shape[2])
             # scale less than one so it will be encouraged
             # to mimic ali_model's output
             ali_model_scale = 500.0 / (global_batch_idx_train // accum_grad + 500)
-            nnet_output_orig = nnet_output
             nnet_output = nnet_output.clone()  # or log-softmax backprop will fail.
             nnet_output[:, :,:min_len] += ali_model_scale * ali_model_output[:, :,:min_len]
-
-            x = nnet_output.abs().sum().item()
-            if x - x != 0:
-                print("Warning: reverting nnet output since it seems to be nan.")
-                nnet_output = nnet_output_orig
-
 
         # nnet_output is [N, C, T]
         nnet_output = nnet_output.permute(0, 2, 1)  # now nnet_output is [N, T, C]
@@ -154,7 +160,6 @@ def get_objf(batch: Dict,
 def get_validation_objf(dataloader: torch.utils.data.DataLoader,
                         model: AcousticModel,
                         ali_model: Optional[AcousticModel],
-                        P: k2.Fsa,
                         device: torch.device,
                         graph_compiler: MmiTrainingGraphCompiler,
                         use_pruned_intersect: bool,
@@ -173,7 +178,6 @@ def get_validation_objf(dataloader: torch.utils.data.DataLoader,
             batch=batch,
             model=model,
             ali_model=ali_model,
-            P=P,
             device=device,
             graph_compiler=graph_compiler,
             use_pruned_intersect=use_pruned_intersect,
@@ -193,7 +197,6 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
                     valid_dataloader: torch.utils.data.DataLoader,
                     model: AcousticModel,
                     ali_model: Optional[AcousticModel],
-                    P: k2.Fsa,
                     device: torch.device,
                     graph_compiler: MmiTrainingGraphCompiler,
                     use_pruned_intersect: bool,
@@ -214,7 +217,6 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
         dataloader: Training dataloader
         valid_dataloader: Validation dataloader
         model: Acoustic model to be trained
-        P: An FSA representing the bigram phone LM
         device: Training device, torch.device("cpu") or torch.device("cuda", device_id)
         graph_compiler: MMI training graph compiler
         optimizer: Training optimizer
@@ -251,15 +253,10 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
         timestamp = datetime.now()
         time_waiting_for_batch += (timestamp - prev_timestamp).total_seconds()
 
-        if forward_count == 1 or accum_grad == 1:
-            P.set_scores_stochastic_(model.module.P_scores)
-            assert P.requires_grad is True
-
         curr_batch_objf, curr_batch_frames, curr_batch_all_frames = get_objf(
             batch=batch,
             model=model,
             ali_model=ali_model,
-            P=P,
             device=device,
             graph_compiler=graph_compiler,
             use_pruned_intersect=use_pruned_intersect,
@@ -299,13 +296,15 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
                 tb_writer.add_scalar('train/current_batch_average_objf',
                                      curr_batch_objf / (curr_batch_frames + 0.001),
                                      global_batch_idx_train)
+            # if batch_idx >= 10:
+            #    print("Exiting early to get profile info")
+            #    sys.exit(0)
 
         if batch_idx > 0 and batch_idx % 200 == 0:
             total_valid_objf, total_valid_frames, total_valid_all_frames = get_validation_objf(
                 dataloader=valid_dataloader,
                 model=model,
                 ali_model=ali_model,
-                P=P,
                 device=device,
                 graph_compiler=graph_compiler,
                 use_pruned_intersect=use_pruned_intersect,
@@ -331,7 +330,10 @@ def train_one_epoch(dataloader: torch.utils.data.DataLoader,
                 tb_writer.add_scalar('train/global_valid_average_objf',
                                      valid_average_objf,
                                      global_batch_idx_train)
-                model.module.write_tensorboard_diagnostics(tb_writer, global_step=global_batch_idx_train)
+                if hasattr(model, 'module'):
+                    model.module.write_tensorboard_diagnostics(tb_writer, global_step=global_batch_idx_train)
+                else:
+                    model.write_tensorboard_diagnostics(tb_writer, global_step=global_batch_idx_train)
         prev_timestamp = datetime.now()
     return total_objf / total_frames, valid_average_objf, global_batch_idx_train
 
@@ -357,7 +359,7 @@ def get_parser():
     parser.add_argument(
         '--num-epochs',
         type=int,
-        default=60,
+        default=10,
         help="Number of training epochs.")
     parser.add_argument(
         '--start-epoch',
@@ -422,12 +424,12 @@ def get_parser():
     parser.add_argument(
         '--use-ali-model',
         type=str2bool,
-        default=True,
-        help='If true, we assume that you have run ./mmi_bigram_train.py '
-        'and you have some checkpoints inside the directory '
-        'exp-lstm-adam-mmi-bigram-musan-dist-s4/. It will use '
-        'exp-lstm-adam-mmi-bigram-musan-dist-s4/epoch-{ali-model-epoch}.pt '  # noqa
-        'as the pre-trained alignment model'
+        default=False,
+        help='If true, we assume that you have run ./ctc_train.py '
+             'and you have some checkpoints inside the directory '
+             'exp-lstm-adam-ctc-musan/ .'
+             'It will use exp-lstm-adam-ctc-musan/epoch-{ali-model-epoch}.pt '
+             'as the pre-trained alignment model'
     )
     parser.add_argument(
         '--ali-model-epoch',
@@ -443,8 +445,22 @@ def get_parser():
         default=False,
         help='True to use pruned intersect to compute the denominator lattice. ' \
              'You probably want to set it to True if you have a very large LM. ' \
-             'In that case, you will get an OOM if it is False. ' )
+             'In that case, you will get an OOM if it is False. ')
     #  See https://github.com/k2-fsa/k2/issues/739 for more details
+    parser.add_argument(
+        '--torchscript',
+        type=str2bool,
+        default=False,
+        help='Should we convert the model to TorchScript before starting training.'
+    )
+    parser.add_argument(
+        '--torchscript-epoch',
+        type=int,
+        default=-1,
+        help='After which epoch should we start storing models with TorchScript,'
+             'so that they can be simply loaded with torch.jit.load(). '
+             '-1 disables this option.'
+    )
     return parser
 
 
@@ -469,9 +485,15 @@ def run(rank, world_size, args):
     use_pruned_intersect = args.use_pruned_intersect
 
     fix_random_seed(42)
-    setup_dist(rank, world_size, args.master_port)
+    if world_size > 1:
+        setup_dist(rank, world_size, args.master_port)
 
-    exp_dir = Path('exp-' + model_type + '-noam-mmi-att-musan-sa-vgg-mmiali-ep60')
+    suffix = ''
+    if args.context_window is not None and args.context_window > 0:
+        suffix = f'ac{args.context_window}'
+    giga_subset = f'giga{args.subset}'
+    exp_dir = Path(f'exp-{model_type}-mmi-att-sa-vgg-normlayer-{giga_subset}-{suffix}')
+
     setup_logger(f'{exp_dir}/log/log-train-{rank}')
     if args.tensorboard and rank == 0:
         tb_writer = SummaryWriter(log_dir=f'{exp_dir}/tensorboard')
@@ -479,24 +501,49 @@ def run(rank, world_size, args):
         tb_writer = None
 
     logging.info("Loading lexicon and symbol tables")
-    lang_dir = Path('data/lang')
+    lang_dir = Path('data/lang_nosp')
     lexicon = Lexicon(lang_dir)
 
     device_id = rank
     device = torch.device('cuda', device_id)
 
+    if not Path(lang_dir / f'P_{args.subset}.pt').is_file():
+        logging.debug(f'Loading P from {lang_dir}/P_{args.subset}.fst.txt')
+        with open(lang_dir / f'P_{args.subset}.fst.txt') as f:
+            # P is not an acceptor because there is
+            # a back-off state, whose incoming arcs
+            # have label #0 and aux_label eps.
+            P = k2.Fsa.from_openfst(f.read(), acceptor=False)
+
+        phone_symbol_table = k2.SymbolTable.from_file(lang_dir / 'phones.txt')
+        first_phone_disambig_id = find_first_disambig_symbol(phone_symbol_table)
+
+        # P.aux_labels is not needed in later computations, so
+        # remove it here.
+        del P.aux_labels
+        # CAUTION(fangjun): The following line is crucial.
+        # Arcs entering the back-off state have label equal to #0.
+        # We have to change it to 0 here.
+        P.labels[P.labels >= first_phone_disambig_id] = 0
+
+        P = k2.remove_epsilon(P)
+        P = k2.arc_sort(P)
+        torch.save(P.as_dict(), lang_dir / f'P_{args.subset}.pt')
+    else:
+        logging.debug('Loading pre-compiled P')
+        d = torch.load(lang_dir / f'P_{args.subset}.pt')
+        P = k2.Fsa.from_dict(d)
+
     graph_compiler = MmiTrainingGraphCompiler(
         lexicon=lexicon,
+        P=P,
         device=device,
     )
     phone_ids = lexicon.phone_symbols()
-    P = create_bigram_phone_lm(phone_ids)
-    P.scores = torch.zeros_like(P.scores)
-    P = P.to(device)
 
-    safetspeech = SafetAsrDataModule(args)
-    train_dl = safetspeech.train_dataloaders()
-    valid_dl = safetspeech.valid_dataloaders()
+    gigaspeech = GigaSpeechAsrDataModule(args)
+    train_dl = gigaspeech.train_dataloaders()
+    valid_dl = gigaspeech.valid_dataloaders()
 
     if not torch.cuda.is_available():
         logging.error('No GPU detected!')
@@ -531,20 +578,24 @@ def run(rank, world_size, args):
             num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
             subsampling_factor=4,
             num_decoder_layers=num_decoder_layers,
-            vgg_frontend=True)
+            vgg_frontend=True,
+            is_espnet_structure=True)
     elif model_type == "contextnet":
         model = ContextNet(
-        num_features=80,
-        num_classes=len(phone_ids) + 1) # +1 for the blank symbol
+            num_features=80,
+            num_classes=len(phone_ids) + 1)  # +1 for the blank symbol
     else:
         raise NotImplementedError("Model of type " + str(model_type) + " is not implemented")
 
-    model.P_scores = nn.Parameter(P.scores.clone(), requires_grad=True)
+    if args.torchscript:
+        logging.info('Applying TorchScript to model...')
+        model = torch.jit.script(model)
 
     model.to(device)
     describe(model)
 
-    model = DDP(model, device_ids=[rank])
+    if world_size > 1:
+        model = DDP(model, device_ids=[rank])
 
     # Now for the alignment model, if any
     if args.use_ali_model:
@@ -553,14 +604,13 @@ def run(rank, world_size, args):
             num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
             subsampling_factor=4)
 
-        ali_model_fname = Path(f'exp-lstm-adam-mmi-bigram-musan-dist-s4/epoch-{args.ali_model_epoch}.pt')
+        ali_model_fname = Path(f'exp-lstm-adam-ctc-musan/epoch-{args.ali_model_epoch}.pt')
         assert ali_model_fname.is_file(), \
                 f'ali model filename {ali_model_fname} does not exist!'
-        checkpoint = torch.load(ali_model_fname, map_location='cpu')
-        loaded_dict = checkpoint['state_dict']
-        loaded_dict = {key: loaded_dict[key] for key in ali_model.state_dict()}
-        ali_model.load_state_dict(loaded_dict)
+        ali_model.load_state_dict(torch.load(ali_model_fname, map_location='cpu')['state_dict'])
         ali_model.to(device)
+
+        ali_model.eval()
         ali_model.requires_grad_(False)
         logging.info(f'Use ali_model: {ali_model_fname}')
     else:
@@ -603,7 +653,6 @@ def run(rank, world_size, args):
             valid_dataloader=valid_dl,
             model=model,
             ali_model=ali_model,
-            P=P,
             device=device,
             graph_compiler=graph_compiler,
             use_pruned_intersect=use_pruned_intersect,
@@ -633,7 +682,9 @@ def run(rank, world_size, args):
                             objf=objf,
                             valid_objf=valid_objf,
                             global_batch_idx_train=global_batch_idx_train,
-                            local_rank=rank)
+                            local_rank=rank,
+                            torchscript=args.torchscript_epoch != -1 and epoch >= args.torchscript_epoch
+                            )
             save_training_info(filename=best_epoch_info_filename,
                                model_path=best_model_path,
                                current_epoch=epoch,
@@ -657,7 +708,9 @@ def run(rank, world_size, args):
                         objf=objf,
                         valid_objf=valid_objf,
                         global_batch_idx_train=global_batch_idx_train,
-                        local_rank=rank)
+                        local_rank=rank,
+                        torchscript=args.torchscript_epoch != -1 and epoch >= args.torchscript_epoch
+                        )
         epoch_info_filename = os.path.join(exp_dir, 'epoch-{}-info'.format(epoch))
         save_training_info(filename=epoch_info_filename,
                            model_path=model_path,
@@ -671,21 +724,32 @@ def run(rank, world_size, args):
                            local_rank=rank)
 
     logging.warning('Done')
-    torch.distributed.barrier()
-    cleanup_dist()
+    if world_size > 1:
+        torch.distributed.barrier()
+        cleanup_dist()
 
 
 def main():
     parser = get_parser()
-    SafetAsrDataModule.add_arguments(parser)
+    GigaSpeechAsrDataModule.add_arguments(parser)
     args = parser.parse_args()
     world_size = args.world_size
     assert world_size >= 1
-    mp.spawn(run, args=(world_size, args), nprocs=world_size, join=True)
+    if world_size > 1:
+        mp.spawn(run, args=(world_size, args), nprocs=world_size, join=True)
+    else:
+        run(rank=0, world_size=1, args=args)
 
 
 torch.set_num_threads(1)
 torch.set_num_interop_threads(1)
+
+# Workaround for logging not working in multi GPU training on some systems:
+#def print_(x):
+#    now = datetime.now()
+#    print(now, x)
+#
+#logging.info = print_
 
 if __name__ == '__main__':
     main()
