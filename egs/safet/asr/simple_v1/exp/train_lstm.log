@@ -1,7 +1,11 @@
-# Running on r2n02
-# Started at Tue Aug 10 17:22:48 EDT 2021
+# Running on r8n06
+# Started at Tue Aug 10 18:05:44 EDT 2021
 # /home/hltcoe/aarora/miniconda3/envs/icef/bin/python3 mmi_bigram_train.py 
 World size: 1 Rank: 0
+WARNING:root:printing feature extractors
+2021-08-10 18:05:53,944 WARNING [base.py:249] (0/1) printing feature extractors
+WARNING:root: {'fbank': <class 'lhotse.features.fbank.Fbank'>, 'kaldi-fbank': <class 'lhotse.features.kaldi.extractors.KaldiFbank'>, 'kaldi-mfcc': <class 'lhotse.features.kaldi.extractors.KaldiMfcc'>, 'librosa-fbank': <class 'lhotse.features.librosa_fbank.LibrosaFbank'>, 'mfcc': <class 'lhotse.features.mfcc.Mfcc'>, 'spectrogram': <class 'lhotse.features.spectrogram.Spectrogram'>}
+2021-08-10 18:05:53,946 WARNING [base.py:250] (0/1)  {'fbank': <class 'lhotse.features.fbank.Fbank'>, 'kaldi-fbank': <class 'lhotse.features.kaldi.extractors.KaldiFbank'>, 'kaldi-mfcc': <class 'lhotse.features.kaldi.extractors.KaldiMfcc'>, 'librosa-fbank': <class 'lhotse.features.librosa_fbank.LibrosaFbank'>, 'mfcc': <class 'lhotse.features.mfcc.Mfcc'>, 'spectrogram': <class 'lhotse.features.spectrogram.Spectrogram'>}
 Traceback (most recent call last):
   File "mmi_bigram_train.py", line 537, in <module>
     main()
@@ -33,11 +37,11 @@ Original Traceback (most recent call last):
     return torch.from_numpy(cut.load_features())
   File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/cut.py", line 1471, in load_features
     feature_extractor=create_default_feature_extractor(self._first_non_padding_cut.features.type),
-  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/features/base.py", line 259, in create_default_feature_extractor
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/features/base.py", line 261, in create_default_feature_extractor
     return get_extractor_type(name)()
-  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/features/base.py", line 249, in get_extractor_type
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/features/base.py", line 251, in get_extractor_type
     return FEATURE_EXTRACTORS[name]
 KeyError: 'kaldiio'
 
-# Accounting: time=44 threads=1
-# Finished at Tue Aug 10 17:23:32 EDT 2021 with status 1
+# Accounting: time=11 threads=1
+# Finished at Tue Aug 10 18:05:55 EDT 2021 with status 1
