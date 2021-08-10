@@ -2,7 +2,7 @@
 set -eou pipefail
 . ./path.sh
 # ./run.sh | tee run.log
-stage=0
+stage=4
 if [ $stage -le 0 ]; then
   echo "Stage 0: Create train, dev and dev clean data directories"
   local/queue.pl --mem 32G --config local/coe.conf exp/prepare.log ~/miniconda3/envs/icef/bin/python3 prepare.py

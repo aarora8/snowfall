@@ -149,7 +149,7 @@ def main():
             ).cut_into_windows(10.0).filter(lambda c: c.duration > 5).compute_and_store_features(
                 extractor=extractor,
                 storage_path=f'{output_dir}/feats_musan',
-                num_jobs=args.num_jobs if ex is None else 80,
+                num_jobs=args.num_jobs if ex is None else 40,
                 executor=ex,
                 storage_type=LilcomHdf5Writer
             )

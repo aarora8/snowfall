@@ -331,9 +331,9 @@ def main():
     feature_dir = Path('exp/data')
     logging.info("About to get train cuts")
     cuts_train = CutSet.from_json(feature_dir /
-                                  'cuts_train-clean-100.json.gz')
+                                  'cuts_safet_train.json.gz')
     logging.info("About to get dev cuts")
-    cuts_dev = CutSet.from_json(feature_dir / 'cuts_dev-clean.json.gz')
+    cuts_dev = CutSet.from_json(feature_dir / 'cuts_safet_dev_clean.json.gz')
     logging.info("About to get Musan cuts")
     cuts_musan = CutSet.from_json(feature_dir / 'cuts_musan.json.gz')
 
@@ -366,7 +366,7 @@ def main():
         train,
         sampler=train_sampler,
         batch_size=None,
-        num_workers=4
+        num_workers=1
     )
     logging.info("About to create dev dataset")
     validate = K2SpeechRecognitionDataset(cuts_dev)
