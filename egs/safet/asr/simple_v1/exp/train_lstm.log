@@ -1,0 +1,43 @@
+# Running on r2n02
+# Started at Tue Aug 10 17:22:48 EDT 2021
+# /home/hltcoe/aarora/miniconda3/envs/icef/bin/python3 mmi_bigram_train.py 
+World size: 1 Rank: 0
+Traceback (most recent call last):
+  File "mmi_bigram_train.py", line 537, in <module>
+    main()
+  File "mmi_bigram_train.py", line 466, in main
+    objf, valid_objf, global_batch_idx_train = train_one_epoch(
+  File "mmi_bigram_train.py", line 182, in train_one_epoch
+    for batch_idx, batch in enumerate(dataloader):
+  File "/home/hltcoe/aarora/miniconda3/envs/icef/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 517, in __next__
+    data = self._next_data()
+  File "/home/hltcoe/aarora/miniconda3/envs/icef/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1199, in _next_data
+    return self._process_data(data)
+  File "/home/hltcoe/aarora/miniconda3/envs/icef/lib/python3.8/site-packages/torch/utils/data/dataloader.py", line 1225, in _process_data
+    data.reraise()
+  File "/home/hltcoe/aarora/miniconda3/envs/icef/lib/python3.8/site-packages/torch/_utils.py", line 429, in reraise
+    raise self.exc_type(msg)
+KeyError: Caught KeyError in DataLoader worker process 0.
+Original Traceback (most recent call last):
+  File "/home/hltcoe/aarora/miniconda3/envs/icef/lib/python3.8/site-packages/torch/utils/data/_utils/worker.py", line 202, in _worker_loop
+    data = fetcher.fetch(index)
+  File "/home/hltcoe/aarora/miniconda3/envs/icef/lib/python3.8/site-packages/torch/utils/data/_utils/fetch.py", line 46, in fetch
+    data = self.dataset[possibly_batched_index]
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/dataset/speech_recognition.py", line 118, in __getitem__
+    inputs, _ = self.input_strategy(cuts)
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/dataset/input_strategies.py", line 97, in __call__
+    return collate_features(cuts, executor=_get_executor(self.num_workers))
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/dataset/collation.py", line 126, in collate_features
+    features[idx] = _read_features(cut)
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/dataset/collation.py", line 284, in _read_features
+    return torch.from_numpy(cut.load_features())
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/cut.py", line 1471, in load_features
+    feature_extractor=create_default_feature_extractor(self._first_non_padding_cut.features.type),
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/features/base.py", line 259, in create_default_feature_extractor
+    return get_extractor_type(name)()
+  File "/exp/aarora/icefall_work_env/lhotse_me/lhotse/features/base.py", line 249, in get_extractor_type
+    return FEATURE_EXTRACTORS[name]
+KeyError: 'kaldiio'
+
+# Accounting: time=44 threads=1
+# Finished at Tue Aug 10 17:23:32 EDT 2021 with status 1
