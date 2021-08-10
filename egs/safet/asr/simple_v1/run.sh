@@ -16,6 +16,7 @@ fi
 if [ $stage -le 2 ]; then
   echo "Stage 2: Create the data/lang_nosp directory that has a specific HMM topolopy"
   local/prepare_lang.sh \
+    --position-dependent-phones false \
     data/local/dict \
     "<UNK>" \
     data/local/lang_tmp \
@@ -34,6 +35,42 @@ if [ $stage -le 3 ]; then
     --max-order=3 \
     data/local/lm/lm_tgmed.arpa >data/lang/G.fst.txt
 fi
+
+if [ $stage -le 4 ]; then
+  # this stage takes about 3 minutes
+  mkdir -p data/lm
+  if [ ! -f data/lm/P.arpa ]; then
+    echo "Generating data/lm/P.arpa"
+    ./local/add_silence_to_transcript.py \
+      --transcript exp/data/lm_train_text \
+      --sil-word "!SIL" \
+      --sil-prob 0.5 \
+      --seed 20210629 \
+      > data/lm/transcript_with_sil.txt
+
+    ./local/convert_transcript_to_corpus.py \
+      --transcript data/lm/transcript_with_sil.txt \
+      --lexicon data/local/dict/lexicon.txt \
+      --oov "<UNK>" \
+      > data/lm/corpus.txt
+
+    ./local/make_kn_lm.py \
+      -ngram-order 2 \
+      -text data/lm/corpus.txt \
+      -lm data/lm/P.arpa
+  fi
+fi
+
+if [ $stage -le 5 ]; then
+  if [ ! -f data/lang/P.fst.txt ]; then
+    python3 -m kaldilm \
+      --read-symbol-table="data/lang/phones.txt" \
+      --disambig-symbol='#0' \
+      --max-order=2 \
+      data/lm/P.arpa > data/lang/P.fst.txt
+  fi
+fi
+
 
 if [ $stage -le 4 ]; then
   echo "Stage 4: train lstm model with train and dev clean data directories"

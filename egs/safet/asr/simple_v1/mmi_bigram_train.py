@@ -391,7 +391,7 @@ def main():
         sys.exit(-1)
 
     logging.info("About to create model")
-    model = TdnnLstm1b(num_features=80,
+    model = TdnnLstm1b(num_features=40,
                        num_classes=len(phone_ids) + 1,  # +1 for the blank symbol
                        subsampling_factor=3)
 
